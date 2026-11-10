@@ -74,7 +74,7 @@ export async function withRetry(fn, { tries = 3, baseMs = 250 } = {}) {
 // ---- Buat kode karya unik berikutnya: KARYA-01, KARYA-02, ... ----
 export async function nextWorkCode() {
   const rows = await sql`
-    SELECT code FROM pj_works
+    SELECT code FROM pjt_works
     WHERE code ~ '^KARYA-[0-9]+$'
     ORDER BY (regexp_replace(code, '\\D', '', 'g'))::int DESC
     LIMIT 1

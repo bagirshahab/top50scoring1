@@ -18,7 +18,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 --    Each project has a unique "code" (short slug) + a UUID id so that
 --    scores from all judges can be tied to a single project.
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS pj_works (
+CREATE TABLE IF NOT EXISTS pjt_works (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     code          TEXT UNIQUE NOT NULL,            -- unique code, e.g. "KARYA-01"
     team_name     TEXT NOT NULL,                   -- team / participant name
@@ -28,13 +28,13 @@ CREATE TABLE IF NOT EXISTS pj_works (
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_pj_works_created ON pj_works (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pjt_works_created ON pjt_works (created_at DESC);
 
 -- ---------------------------------------------------------------------
 -- 2. JUDGES
 --    Judge accounts are created by the admin. Passwords stored as bcrypt hash.
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS pj_judges (
+CREATE TABLE IF NOT EXISTS pjt_judges (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name          TEXT NOT NULL,
     username      TEXT UNIQUE NOT NULL,            -- used to log in
@@ -59,10 +59,10 @@ CREATE TABLE IF NOT EXISTS pj_judges (
 --             -> final score on a 0-100 scale, used for ranking.
 --    total    = raw sum of the 5 parameters (kept for reference).
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS pj_scores (
+CREATE TABLE IF NOT EXISTS pjt_scores (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    work_id        UUID NOT NULL REFERENCES pj_works(id) ON DELETE CASCADE,
-    judge_id       UUID NOT NULL REFERENCES pj_judges(id) ON DELETE CASCADE,
+    work_id        UUID NOT NULL REFERENCES pjt_works(id) ON DELETE CASCADE,
+    judge_id       UUID NOT NULL REFERENCES pjt_judges(id) ON DELETE CASCADE,
 
     -- 5 weighted parameters (1-100)
     problem        INTEGER NOT NULL,   -- Problem & Impact (25%)
@@ -80,14 +80,14 @@ CREATE TABLE IF NOT EXISTS pj_scores (
     UNIQUE (work_id, judge_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_pj_scores_work  ON pj_scores (work_id);
-CREATE INDEX IF NOT EXISTS idx_pj_scores_judge ON pj_scores (judge_id);
+CREATE INDEX IF NOT EXISTS idx_pjt_scores_work  ON pjt_scores (work_id);
+CREATE INDEX IF NOT EXISTS idx_pjt_scores_judge ON pjt_scores (judge_id);
 
 -- ---------------------------------------------------------------------
 -- 4. ADMINS (optional — you can also use ENV credentials)
 --    Passwords stored as bcrypt hash.
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS pj_admins (
+CREATE TABLE IF NOT EXISTS pjt_admins (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username      TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
@@ -100,15 +100,15 @@ CREATE TABLE IF NOT EXISTS pj_admins (
 --    SELECT w.code, w.team_name, w.project_title,
 --           COUNT(s.id)                 AS judge_count,
 --           COALESCE(AVG(s.weighted),0) AS avg_weighted
---    FROM pj_works w
---    LEFT JOIN pj_scores s ON s.work_id = w.id
+--    FROM pjt_works w
+--    LEFT JOIN pjt_scores s ON s.work_id = w.id
 --    GROUP BY w.id
 --    ORDER BY avg_weighted DESC;
 -- =====================================================================
 
 
 -- =====================================================================
---  MIGRATION (run ONLY if you already have the OLD pj_scores table with
+--  MIGRATION (run ONLY if you already have the OLD pjt_scores table with
 --  columns: innovation, functionality, design, impact, technical).
 --
 --  This drops the old score rows because the parameters changed meaning,
@@ -116,10 +116,10 @@ CREATE TABLE IF NOT EXISTS pj_admins (
 --  keep old data, map columns manually instead.
 --
 --    -- 1) Clear old scores (parameters changed, cannot be mapped 1:1)
---    DELETE FROM pj_scores;
+--    DELETE FROM pjt_scores;
 --
 --    -- 2) Drop old parameter columns
---    ALTER TABLE pj_scores
+--    ALTER TABLE pjt_scores
 --      DROP COLUMN IF EXISTS innovation,
 --      DROP COLUMN IF EXISTS functionality,
 --      DROP COLUMN IF EXISTS design,
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS pj_admins (
 --      DROP COLUMN IF EXISTS technical;
 --
 --    -- 3) Add new weighted parameter columns
---    ALTER TABLE pj_scores
+--    ALTER TABLE pjt_scores
 --      ADD COLUMN IF NOT EXISTS problem     INTEGER NOT NULL DEFAULT 1,
 --      ADD COLUMN IF NOT EXISTS solution    INTEGER NOT NULL DEFAULT 1,
 --      ADD COLUMN IF NOT EXISTS evidence    INTEGER NOT NULL DEFAULT 1,
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS pj_admins (
 --      ADD COLUMN IF NOT EXISTS weighted    NUMERIC(6,2) NOT NULL DEFAULT 0;
 --
 --    -- 4) (Optional) remove the temporary defaults
---    ALTER TABLE pj_scores
+--    ALTER TABLE pjt_scores
 --      ALTER COLUMN problem     DROP DEFAULT,
 --      ALTER COLUMN solution    DROP DEFAULT,
 --      ALTER COLUMN evidence    DROP DEFAULT,

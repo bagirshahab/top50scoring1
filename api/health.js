@@ -11,9 +11,9 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed." });
 
   try {
-    const works = (await sql`SELECT COUNT(*)::int AS c FROM pj_works`)[0].c;
-    const judges = (await sql`SELECT COUNT(*)::int AS c FROM pj_judges`)[0].c;
-    const scores = (await sql`SELECT COUNT(*)::int AS c FROM pj_scores`)[0].c;
+    const works = (await sql`SELECT COUNT(*)::int AS c FROM pjt_works`)[0].c;
+    const judges = (await sql`SELECT COUNT(*)::int AS c FROM pjt_judges`)[0].c;
+    const scores = (await sql`SELECT COUNT(*)::int AS c FROM pjt_scores`)[0].c;
 
     return res.status(200).json({
       ok: true,

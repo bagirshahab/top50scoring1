@@ -45,7 +45,7 @@ export default async function handler(req, res) {
 
       const rows = await sql`
         SELECT problem, solution, evidence, feasibility, ux, comment, weighted, total
-        FROM pj_scores
+        FROM pjt_scores
         WHERE work_id = ${workId} AND judge_id = ${judge.id}
         LIMIT 1
       `;
@@ -75,13 +75,13 @@ export default async function handler(req, res) {
       const comment = (body.comment || "").toString().trim().slice(0, 2000) || null;
 
       // Make sure the project exists (retry on transient DB errors; read-only)
-      const w = await withRetry(() => sql`SELECT id FROM pj_works WHERE id = ${workId} LIMIT 1`);
+      const w = await withRetry(() => sql`SELECT id FROM pjt_works WHERE id = ${workId} LIMIT 1`);
       if (!w[0]) return res.status(404).json({ error: "Project not found." });
 
       // Upsert based on UNIQUE(work_id, judge_id).
       // Idempotent, so it is safe to retry on transient DB errors.
       await withRetry(() => sql`
-        INSERT INTO pj_scores
+        INSERT INTO pjt_scores
           (work_id, judge_id, problem, solution, evidence, feasibility, ux, comment, weighted, total, created_at, updated_at)
         VALUES
           (${workId}, ${judge.id}, ${vals.problem}, ${vals.solution}, ${vals.evidence},

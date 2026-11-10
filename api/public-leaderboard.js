@@ -44,8 +44,8 @@ export default async function handler(req, res) {
         w.code, w.team_name, w.project_title, w.category,
         COUNT(s.id)                                     AS judge_count,
         COALESCE(ROUND(AVG(s.weighted)::numeric, 2), 0) AS avg_weighted
-      FROM pj_works w
-      LEFT JOIN pj_scores s ON s.work_id = w.id
+      FROM pjt_works w
+      LEFT JOIN pjt_scores s ON s.work_id = w.id
       GROUP BY w.id
       ORDER BY avg_weighted DESC, judge_count DESC,
                NULLIF(regexp_replace(w.code, '\\D', '', 'g'), '')::int NULLS LAST, w.code

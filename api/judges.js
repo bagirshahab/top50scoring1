@@ -23,8 +23,8 @@ export default async function handler(req, res) {
       const rows = await sql`
         SELECT j.id, j.name, j.username, j.created_at,
                COUNT(s.id) AS scored_count
-        FROM pj_judges j
-        LEFT JOIN pj_scores s ON s.judge_id = j.id
+        FROM pjt_judges j
+        LEFT JOIN pjt_scores s ON s.judge_id = j.id
         GROUP BY j.id
         ORDER BY j.created_at ASC
       `;
@@ -49,14 +49,14 @@ export default async function handler(req, res) {
       }
 
       // Check for duplicates
-      const exist = await sql`SELECT id FROM pj_judges WHERE username = ${uname} LIMIT 1`;
+      const exist = await sql`SELECT id FROM pjt_judges WHERE username = ${uname} LIMIT 1`;
       if (exist[0]) {
         return res.status(409).json({ error: "That judge username is already taken." });
       }
 
       const hash = await bcrypt.hash(pass, 10);
       const rows = await sql`
-        INSERT INTO pj_judges (name, username, password_hash)
+        INSERT INTO pjt_judges (name, username, password_hash)
         VALUES (${nm}, ${uname}, ${hash})
         RETURNING id, name, username, created_at
       `;
@@ -67,7 +67,7 @@ export default async function handler(req, res) {
     if (req.method === "DELETE") {
       const id = req.query.id;
       if (!id) return res.status(400).json({ error: "Judge ID is required." });
-      await sql`DELETE FROM pj_judges WHERE id = ${id}`;
+      await sql`DELETE FROM pjt_judges WHERE id = ${id}`;
       return res.status(200).json({ success: true });
     }
 

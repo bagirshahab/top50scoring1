@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
   try {
     const rows = await sql`
-      SELECT work_id, weighted, total FROM pj_scores WHERE judge_id = ${judge.id}
+      SELECT work_id, weighted, total FROM pjt_scores WHERE judge_id = ${judge.id}
     `;
     return res.status(200).json({ scored: rows });
   } catch (err) {

@@ -2,8 +2,8 @@
 //  POST /api/login
 //  Body: { role: "admin" | "judge", username, password }
 //  - admin: checked against ENV (ADMIN_USERNAME / ADMIN_PASSWORD),
-//           or the pj_admins table (bcrypt hash) if present.
-//  - judge: checked against the pj_judges table (bcrypt hash).
+//           or the pjt_admins table (bcrypt hash) if present.
+//  - judge: checked against the pjt_judges table (bcrypt hash).
 //  Returns { token, user }.
 //
 //  JUDGING GATE: judges can only sign in while judging is OPEN, i.e. between
@@ -47,8 +47,8 @@ export default async function handler(req, res) {
         return res.status(200).json({ token, user: { role: "admin", name: "Administrator", username: envUser } });
       }
 
-      // 2) Coba cocokkan dengan tabel pj_admins (bila dipakai)
-      const rows = await sql`SELECT id, username, password_hash FROM pj_admins WHERE username = ${uname} LIMIT 1`;
+      // 2) Coba cocokkan dengan tabel pjt_admins (bila dipakai)
+      const rows = await sql`SELECT id, username, password_hash FROM pjt_admins WHERE username = ${uname} LIMIT 1`;
       if (rows[0] && (await bcrypt.compare(password, rows[0].password_hash))) {
         const token = signToken({ role: "admin", id: rows[0].id, username: rows[0].username, name: "Administrator" });
         return res.status(200).json({ token, user: { role: "admin", name: "Administrator", username: rows[0].username } });
@@ -79,7 +79,7 @@ export default async function handler(req, res) {
       }
 
       const rows = await sql`
-        SELECT id, name, username, password_hash FROM pj_judges WHERE username = ${uname} LIMIT 1
+        SELECT id, name, username, password_hash FROM pjt_judges WHERE username = ${uname} LIMIT 1
       `;
       const judge = rows[0];
       if (!judge || !(await bcrypt.compare(password, judge.password_hash))) {

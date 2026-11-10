@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       const rows = await sql`
         SELECT id, code, team_name, project_title, category, created_at,
                length(html_content) AS html_size
-        FROM pj_works
+        FROM pjt_works
         ORDER BY NULLIF(regexp_replace(code, '\\D', '', 'g'), '')::int NULLS LAST, code
       `;
       return res.status(200).json({ works: rows });
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
 
       const code = await nextWorkCode();
       const rows = await sql`
-        INSERT INTO pj_works (code, team_name, project_title, category, html_content)
+        INSERT INTO pjt_works (code, team_name, project_title, category, html_content)
         VALUES (${code}, ${team}, ${title}, ${cat || null}, ${html})
         RETURNING id, code, team_name, project_title, category, created_at
       `;
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
       const id = req.query.id;
       if (!id) return res.status(400).json({ error: "Project ID is required." });
 
-      await sql`DELETE FROM pj_works WHERE id = ${id}`;
+      await sql`DELETE FROM pjt_works WHERE id = ${id}`;
       return res.status(200).json({ success: true });
     }
 

@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   try {
     const rows = await sql`
-      SELECT html_content, project_title FROM pj_works WHERE code = ${code} LIMIT 1
+      SELECT html_content, project_title FROM pjt_works WHERE code = ${code} LIMIT 1
     `;
     const work = rows[0];
 

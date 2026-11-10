@@ -29,8 +29,8 @@ export default async function handler(req, res) {
         COALESCE(ROUND(AVG(s.evidence)::numeric, 1), 0)   AS avg_evidence,
         COALESCE(ROUND(AVG(s.feasibility)::numeric, 1), 0) AS avg_feasibility,
         COALESCE(ROUND(AVG(s.ux)::numeric, 1), 0)         AS avg_ux
-      FROM pj_works w
-      LEFT JOIN pj_scores s ON s.work_id = w.id
+      FROM pjt_works w
+      LEFT JOIN pjt_scores s ON s.work_id = w.id
       GROUP BY w.id
       ORDER BY avg_weighted DESC, judge_count DESC,
                NULLIF(regexp_replace(w.code, '\\D', '', 'g'), '')::int NULLS LAST, w.code
@@ -40,13 +40,13 @@ export default async function handler(req, res) {
     const details = await sql`
       SELECT s.work_id, j.name AS judge_name, s.problem, s.solution,
              s.evidence, s.feasibility, s.ux, s.weighted, s.total, s.comment, s.updated_at
-      FROM pj_scores s
-      JOIN pj_judges j ON j.id = s.judge_id
+      FROM pjt_scores s
+      JOIN pjt_judges j ON j.id = s.judge_id
       ORDER BY s.weighted DESC
     `;
 
     // Quick stats
-    const totalJudges = (await sql`SELECT COUNT(*)::int AS c FROM pj_judges`)[0].c;
+    const totalJudges = (await sql`SELECT COUNT(*)::int AS c FROM pjt_judges`)[0].c;
     const totalWorks = ranking.length;
 
     return res.status(200).json({ ranking, details, stats: { totalJudges, totalWorks } });
