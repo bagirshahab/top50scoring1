@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — AI For All Hackathon Judging</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-mark">⚖️</span>
+      <span class="brand-text"><b>AI FOR ALL</b> Judging<span class="brand-sub">ADMIN DASHBOARD</span></span>
+    </div>
+    <div class="topbar-right">
+      <span class="who">Hi, <b id="who-name">Admin</b></span>
+      <span class="badge-role admin">Admin</span>
+      <button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>Admin Dashboard</h1>
+      <p>Manage participant projects, create judge accounts, and monitor scoring results that are ranked automatically.</p>
+    </div>
+
+    <!-- Stats -->
+    <section class="stats">
+      <div class="stat"><div class="stat-num" id="stat-works">0</div><div class="stat-label">Total Projects</div></div>
+      <div class="stat"><div class="stat-num" id="stat-judges">0</div><div class="stat-label">Total Judges</div></div>
+      <div class="stat"><div class="stat-num" id="stat-scored">0</div><div class="stat-label">Scores Submitted</div></div>
+      <div class="stat"><div class="stat-num" id="stat-top">—</div><div class="stat-label">Rank #1</div></div>
+    </section>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="ranking" onclick="switchTab('ranking')">🏆 Ranking</button>
+      <button class="tab" data-tab="works" onclick="switchTab('works')">📦 Projects</button>
+      <button class="tab" data-tab="judges" onclick="switchTab('judges')">👨‍⚖️ Judges</button>
+    </div>
+
+    <!-- ========== TAB: RANKING ========== -->
+    <section id="tab-ranking">
+      <div class="card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <h2>🏆 Automatic Leaderboard</h2>
+            <p class="card-desc">Each judge's weighted score (0–100) is averaged across all judges, then sorted from highest. Click a row to see the per-judge breakdown.</p>
+          </div>
+          <a href="/leaderboard" target="_blank" class="btn btn-cyan btn-sm" style="white-space:nowrap">🌐 Public Leaderboard</a>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px">Rank</th>
+                <th>Code</th>
+                <th>Project / Team</th>
+                <th style="width:80px">Judges</th>
+                <th style="width:130px">Weighted (0–100)</th>
+              </tr>
+            </thead>
+            <tbody id="ranking-body">
+              <tr><td colspan="5" class="empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TAB: PROJECTS ========== -->
+    <section id="tab-works" hidden>
+      <div class="grid grid-2">
+        <!-- Add project form -->
+        <div class="card card-accent">
+          <h2>➕ Add Project</h2>
+          <p class="card-desc">Add a participant's HTML project. Each project automatically receives a unique code (e.g. KARYA-01).</p>
+          <form id="work-form">
+            <div class="field">
+              <label>Team / Participant Name <span class="req">*</span></label>
+              <input type="text" id="w-team" placeholder="e.g. Team Garuda" required />
+            </div>
+            <div class="field">
+              <label>Project Title <span class="req">*</span></label>
+              <input type="text" id="w-title" placeholder="e.g. Smart Farmer AI" required />
+            </div>
+            <div class="field">
+              <label>Category / Theme</label>
+              <input type="text" id="w-category" placeholder="e.g. Agriculture & Food (optional)" />
+            </div>
+            <div class="field">
+              <label>Project HTML File <span class="req">*</span></label>
+              <input type="file" id="w-file" accept=".html,.htm" />
+              <p class="hint">Upload an .html file, or paste the code directly below.</p>
+            </div>
+            <div class="field">
+              <label>Or paste the HTML code</label>
+              <textarea id="w-html" placeholder="&lt;!DOCTYPE html&gt;..." style="min-height:120px;font-family:ui-monospace,monospace;font-size:12.5px;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" id="work-submit">Save Project</button>
+            <div id="work-msg" class="msg"></div>
+          </form>
+        </div>
+
+        <!-- Project list -->
+        <div class="card">
+          <h2>📦 Project List</h2>
+          <p class="card-desc">All registered projects. Click "Preview" to view how a project looks.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Code</th><th>Project / Team</th><th style="width:150px"></th></tr>
+              </thead>
+              <tbody id="works-body">
+                <tr><td colspan="3" class="empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== TAB: JUDGES ========== -->
+    <section id="tab-judges" hidden>
+      <div class="grid grid-2">
+        <!-- Create judge form -->
+        <div class="card card-accent-cyan">
+          <h2>➕ Create Judge Account</h2>
+          <p class="card-desc">Judges log in with this username &amp; password. Share the credentials with each judge.</p>
+          <form id="judge-form">
+            <div class="field">
+              <label>Judge Name <span class="req">*</span></label>
+              <input type="text" id="j-name" placeholder="e.g. Dr. John Smith" required />
+            </div>
+            <div class="field">
+              <label>Username <span class="req">*</span></label>
+              <input type="text" id="j-username" placeholder="e.g. judge1 (lowercase/numbers)" required />
+            </div>
+            <div class="field">
+              <label>Password <span class="req">*</span></label>
+              <input type="text" id="j-password" placeholder="minimum 6 characters" required />
+              <p class="hint">Shown as plain text so it's easy to copy. The password is stored hashed on the server.</p>
+            </div>
+            <button type="submit" class="btn btn-cyan btn-block" id="judge-submit">Create Judge Account</button>
+            <div id="judge-msg" class="msg"></div>
+          </form>
+        </div>
+
+        <!-- Judge list -->
+        <div class="card">
+          <h2>👨‍⚖️ Judge List</h2>
+          <p class="card-desc">Registered judges along with how many projects they have scored.</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Username</th><th style="width:90px">Scored</th><th style="width:70px"></th></tr>
+              </thead>
+              <tbody id="judges-body">
+                <tr><td colspan="4" class="empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Project preview modal -->
+  <div id="preview-modal" class="modal" hidden>
+    <div class="modal-backdrop" onclick="closePreview()"></div>
+    <div class="modal-card" style="grid-template-columns:1fr;">
+      <div class="modal-head">
+        <h3 id="preview-title">Project Preview</h3>
+        <button class="modal-close" onclick="closePreview()">&times;</button>
+      </div>
+      <div class="modal-preview" style="grid-column:1/-1;">
+        <iframe id="preview-frame" sandbox="allow-scripts" title="Preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ranking detail modal (per-judge scores) -->
+  <div id="detail-modal" class="modal" hidden>
+    <div class="modal-backdrop" onclick="closeDetail()"></div>
+    <div class="modal-card" style="grid-template-columns:1fr;max-width:720px;">
+      <div class="modal-head">
+        <h3 id="detail-title">Score Breakdown</h3>
+        <button class="modal-close" onclick="closeDetail()">&times;</button>
+      </div>
+      <div class="modal-score" style="grid-column:1/-1;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Judge</th>
+                <th title="Problem & Impact (25%)">Problem</th>
+                <th title="Solution Fit & Insight (25%)">Solution</th>
+                <th title="Evidence & Consistency (15%)">Evidence</th>
+                <th title="Feasibility & Risk Honesty (15%)">Feasib.</th>
+                <th title="Visual & User Experience (20%)">UX</th>
+                <th>Weighted</th>
+              </tr>
+            </thead>
+            <tbody id="detail-body"></tbody>
+          </table>
+        </div>
+        <div id="detail-comments" style="margin-top:16px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">© 2026 AI For All Hackathon — Judging System</p>
+
+  <script src="app.js"></script>
+  <script src="admin.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — AI For All Hackathon 2026 Judging</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="login-shell">
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="logo-mark">⚖️</span>
+      </div>
+      <h1>Judging System</h1>
+      <p class="login-sub">AI For All Hackathon 2026 — Project Evaluation Portal</p>
+
+      <!-- Notice shown while judging is outside its window -->
+      <div id="pre-open-notice" class="pre-open-notice" hidden>
+        ⏳ Judging has not opened yet. Judge sign-in unlocks on <b>6 November 2026</b>.
+      </div>
+      <div id="closed-notice" class="pre-open-notice closed" hidden>
+        🔒 Judging closed on <b>8 November 2026, 3 PM</b>. Judge sign-in is no longer available.
+      </div>
+
+      <!-- Role selection -->
+      <div class="role-switch" role="tablist">
+        <button type="button" id="role-judge" class="active" onclick="setRole('judge')">👨‍⚖️ Judge</button>
+        <button type="button" id="role-admin" onclick="setRole('admin')">🛠️ Admin</button>
+      </div>
+
+      <form id="login-form" novalidate>
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="enter your username" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="enter your password" autocomplete="current-password" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="login-btn">
+          <span id="login-btn-text">Sign In</span>
+        </button>
+        <div id="login-msg" class="msg" role="status" aria-live="polite"></div>
+      </form>
+
+      <p class="login-foot">
+        Judge accounts are created by the admin. Contact the committee if you lost your credentials.
+      </p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Judging window (UTC+7 / WIB). Keep in sync with index.html and the server env vars.
+    const OPEN_AT  = new Date('2026-11-06T00:00:00+07:00').getTime();
+    const CLOSE_AT = new Date('2026-12-31T23:59:00+07:00').getTime();
+    const now = Date.now();
+    const BEFORE_OPEN = now < OPEN_AT;
+    const AFTER_CLOSE = now >= CLOSE_AT;
+    const JUDGING_OPEN = !BEFORE_OPEN && !AFTER_CLOSE;
+
+    // Once judging has closed, this page is no longer useful to judges — send them
+    // to the landing page which shows the "Judging Closed" notice. Admins can still
+    // reach /login directly via ?admin=1 if they need to review.
+    if (AFTER_CLOSE && !/[?&]admin=1/.test(location.search)) {
+      location.replace('/');
+    }
+
+    // Outside the judging window, judge login is disabled here AND on the server.
+    // Admins can still sign in. Default the role switch to Admin in that case.
+    let currentRole = JUDGING_OPEN ? 'judge' : 'admin';
+
+    function setRole(role) {
+      if (role === 'judge' && !JUDGING_OPEN) {
+        document.getElementById('login-msg').textContent = AFTER_CLOSE
+          ? 'Judging has closed. Judge sign-in is no longer available.'
+          : 'Judge sign-in opens on 6 November 2026.';
+        document.getElementById('login-msg').className = 'msg error';
+        return;
+      }
+      currentRole = role;
+      document.getElementById('role-judge').classList.toggle('active', role === 'judge');
+      document.getElementById('role-admin').classList.toggle('active', role === 'admin');
+      document.getElementById('login-msg').textContent = '';
+      document.getElementById('login-msg').className = 'msg';
+    }
+
+    // Apply gate UI (default to Admin, flag Judge as locked, show the matching notice)
+    (function applyGateUI() {
+      if (!JUDGING_OPEN) {
+        document.getElementById(AFTER_CLOSE ? 'closed-notice' : 'pre-open-notice').hidden = false;
+        const judgeBtn = document.getElementById('role-judge');
+        judgeBtn.classList.remove('active');
+        judgeBtn.classList.add('locked');
+        judgeBtn.innerHTML = '🔒 Judge';
+        document.getElementById('role-admin').classList.add('active');
+      }
+    })();
+
+    // If already logged in, redirect to the matching dashboard
+    (function redirectIfLoggedIn() {
+      const sess = Auth.get();
+      if (sess?.user?.role === 'admin') location.href = '/admin';
+      else if (sess?.user?.role === 'judge') location.href = '/juri';
+    })();
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const txt = document.getElementById('login-btn-text');
+      const msg = document.getElementById('login-msg');
+      msg.textContent = '';
+      msg.className = 'msg';
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      if (!username || !password) {
+        msg.textContent = 'Please fill in both username and password.';
+        msg.className = 'msg error';
+        return;
+      }
+
+      btn.disabled = true;
+      txt.textContent = 'Processing...';
+      try {
+        const res = await fetch(API('/api/login'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: currentRole, username, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed.');
+
+        Auth.set(data.token, data.user);
+        location.href = data.user.role === 'admin' ? '/admin' : '/juri';
+      } catch (err) {
+        msg.textContent = err.message;
+        msg.className = 'msg error';
+        btn.disabled = false;
+        txt.textContent = 'Sign In';
+      }
+    });
+  </script>
+</body>
+
+</html>

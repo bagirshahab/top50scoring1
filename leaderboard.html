@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Public Leaderboard — AI For All Hackathon 2026</title>
+  <meta name="description" content="Live, transparent leaderboard of the AI For All Hackathon 2026 judging." />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Topbar (public, no auth) -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-mark">🏆</span>
+      <span class="brand-text"><b>AI FOR ALL</b> Leaderboard<span class="brand-sub">PUBLIC · TRANSPARENT</span></span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost btn-sm" id="refresh-btn" onclick="loadBoard()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="page-head" style="text-align:center">
+      <h1>🏆 Hackathon Leaderboard</h1>
+      <p>Live ranking by weighted score (0–100). Updated automatically as judges submit their scores. Shared openly for transparency.</p>
+      <div id="updated-at" style="font-size:12px;color:var(--muted-2);margin-top:4px"></div>
+    </div>
+
+    <!-- Scoring rubric (weights) -->
+    <section class="card" style="margin-bottom:22px">
+      <h2 style="font-size:15px">📋 Scoring Rubric</h2>
+      <p class="card-desc">Each project is scored 1–100 on five parameters. The final score is weighted:</p>
+      <div class="rubric">
+        <span class="rubric-item"><b>Problem &amp; Impact</b><span class="weight-badge">25%</span></span>
+        <span class="rubric-item"><b>Solution Fit &amp; Insight</b><span class="weight-badge">25%</span></span>
+        <span class="rubric-item"><b>Evidence &amp; Consistency</b><span class="weight-badge">15%</span></span>
+        <span class="rubric-item"><b>Feasibility &amp; Risk Honesty</b><span class="weight-badge">15%</span></span>
+        <span class="rubric-item"><b>Visual &amp; User Experience</b><span class="weight-badge">20%</span></span>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats" style="grid-template-columns:repeat(2,1fr);max-width:520px;margin-inline:auto">
+      <div class="stat"><div class="stat-num" id="stat-works">0</div><div class="stat-label">Projects</div></div>
+      <div class="stat"><div class="stat-num" id="stat-scored">0</div><div class="stat-label">Scored</div></div>
+    </section>
+
+    <!-- Podium (top 3) -->
+    <section id="podium" class="podium" hidden></section>
+
+    <!-- Full ranking -->
+    <section class="card">
+      <h2>🥇 Full Ranking</h2>
+      <p class="card-desc">Sorted from highest weighted score.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:60px">Rank</th>
+              <th>Code</th>
+              <th>Project / Team</th>
+              <th style="width:80px">Judges</th>
+              <th style="width:130px">Score (0–100)</th>
+            </tr>
+          </thead>
+          <tbody id="board-body">
+            <tr><td colspan="5" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <p class="foot">© 2026 AI For All Hackathon — Public Leaderboard · Scores update in near real-time</p>
+
+  <script src="app.js"></script>
+  <script>
+    const boardBody = document.getElementById("board-body");
+
+    async function loadBoard() {
+      const btn = document.getElementById("refresh-btn");
+      btn.disabled = true;
+      try {
+        // Public endpoint — no auth needed
+        const res = await fetch(API("/api/public-leaderboard"));
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load leaderboard.");
+
+        if (data.published === false) {
+          boardBody.innerHTML = `<tr><td colspan="5" class="empty"><div class="empty-ic">🔒</div>The leaderboard is not available yet. Results will be published during/after the judging period.</td></tr>`;
+          document.getElementById("podium").hidden = true;
+          document.getElementById("stat-works").textContent = "—";
+          document.getElementById("stat-scored").textContent = "—";
+          return;
+        }
+
+        const ranking = data.ranking || [];
+        document.getElementById("stat-works").textContent = data.stats.totalWorks;
+        document.getElementById("stat-scored").textContent = data.stats.totalScored;
+        if (data.updatedAt) {
+          document.getElementById("updated-at").textContent =
+            "Last updated: " + new Date(data.updatedAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+        }
+
+        if (!ranking.length) {
+          boardBody.innerHTML = `<tr><td colspan="5" class="empty"><div class="empty-ic">📭</div>No projects yet.</td></tr>`;
+          document.getElementById("podium").hidden = true;
+          return;
+        }
+
+        renderPodium(ranking);
+        renderTable(ranking);
+      } catch (err) {
+        boardBody.innerHTML = `<tr><td colspan="5" class="empty">${esc(err.message)}</td></tr>`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function renderPodium(ranking) {
+      // Only projects that have at least 1 judge, top 3
+      const scored = ranking.filter((r) => Number(r.judge_count) > 0).slice(0, 3);
+      const podium = document.getElementById("podium");
+      if (scored.length < 1) { podium.hidden = true; return; }
+      const medals = ["🥇", "🥈", "🥉"];
+      const order = [1, 0, 2]; // visual: 2nd, 1st, 3rd
+      podium.hidden = false;
+      podium.innerHTML = order
+        .filter((idx) => scored[idx])
+        .map((idx) => {
+          const r = scored[idx];
+          return `
+            <div class="podium-card podium-${idx + 1}">
+              <div class="podium-medal">${medals[idx]}</div>
+              <div class="podium-rank">#${idx + 1}</div>
+              <div class="podium-title">${esc(r.project_title)}</div>
+              <div class="podium-team">${esc(r.team_name)}</div>
+              <div class="podium-score">${Number(r.avg_weighted).toFixed(2)}</div>
+              <div class="podium-score-label">weighted score</div>
+            </div>`;
+        }).join("");
+    }
+
+    function renderTable(ranking) {
+      boardBody.innerHTML = ranking.map((r, i) => {
+        const rank = i + 1;
+        const rankCls = rank <= 3 ? `rank-${rank}` : "";
+        const hasScore = Number(r.judge_count) > 0;
+        return `
+          <tr>
+            <td><span class="rank-badge ${rankCls}">${rank}</span></td>
+            <td><span class="code-pill">${esc(r.code)}</span></td>
+            <td>
+              <div style="font-weight:700">${esc(r.project_title)}</div>
+              <div style="font-size:12.5px;color:var(--muted)">${esc(r.team_name)}${r.category ? " · " + esc(r.category) : ""}</div>
+            </td>
+            <td>${hasScore ? `<span class="chip done">${r.judge_count}</span>` : `<span class="chip pending">—</span>`}</td>
+            <td><span class="score-cell">${hasScore ? Number(r.avg_weighted).toFixed(2) : "—"}</span></td>
+          </tr>`;
+      }).join("");
+    }
+
+    // Initial load + auto-refresh every 30s
+    loadBoard();
+    setInterval(loadBoard, 30000);
+  </script>
+</body>
+
+</html>

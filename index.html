@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI For All Hackathon 2026 — Judging Opens Soon</title>
+  <meta name="description" content="The AI For All Hackathon 2026 judging platform opens on 6 November 2026." />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="countdown-shell">
+    <div class="countdown-card">
+      <div class="login-logo">
+        <span class="logo-mark">⚖️</span>
+      </div>
+
+      <span class="cd-eyebrow">AI FOR ALL HACKATHON 2026</span>
+      <h1 class="cd-title" id="cd-title">Judging Platform<br><span class="cd-title-accent">Opening Soon</span></h1>
+      <p class="cd-sub" id="cd-sub">
+        The judging platform opens for scoring on<br>
+        <b>Friday, 6 November 2026</b>. Please check back then.
+      </p>
+
+      <!-- Live countdown (shown before judging opens) -->
+      <div class="countdown" id="countdown" aria-live="polite">
+        <div class="cd-unit"><span class="cd-num" id="cd-days">00</span><span class="cd-label">Days</span></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-unit"><span class="cd-num" id="cd-hours">00</span><span class="cd-label">Hours</span></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-unit"><span class="cd-num" id="cd-mins">00</span><span class="cd-label">Minutes</span></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-unit"><span class="cd-num" id="cd-secs">00</span><span class="cd-label">Seconds</span></div>
+      </div>
+
+      <!-- Shown while judging is open -->
+      <div id="cd-open" hidden>
+        <p class="cd-open-msg">🎉 The judging platform is now open!</p>
+        <a href="/login" class="btn btn-primary btn-block">Enter Judging Platform →</a>
+      </div>
+
+      <!-- Shown after judging has closed -->
+      <div id="cd-closed" hidden>
+        <div class="cd-closed-badge">🔒 Judging Closed</div>
+        <p class="cd-closed-msg">Thank you to all the judges. Scoring is now complete and judge sign-in has been disabled.</p>
+      </div>
+
+      <p class="cd-foot" id="cd-foot">
+        Judges will be able to sign in once judging opens.<br>
+        Results will be published after the judging period.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Judging window (UTC+7 / WIB). Keep in sync with login.html and the server env vars.
+    const OPEN_AT  = new Date('2026-11-06T00:00:00+07:00').getTime();
+    const CLOSE_AT = new Date('2026-12-31T23:59:00+07:00').getTime();
+
+    const el = {
+      title: document.getElementById('cd-title'),
+      days: document.getElementById('cd-days'),
+      hours: document.getElementById('cd-hours'),
+      mins: document.getElementById('cd-mins'),
+      secs: document.getElementById('cd-secs'),
+      countdown: document.getElementById('countdown'),
+      open: document.getElementById('cd-open'),
+      closed: document.getElementById('cd-closed'),
+      sub: document.getElementById('cd-sub'),
+      foot: document.getElementById('cd-foot'),
+    };
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function render() {
+      const now = Date.now();
+
+      // ----- State 3: judging has closed -----
+      if (now >= CLOSE_AT) {
+        el.countdown.hidden = true;
+        el.open.hidden = true;
+        el.closed.hidden = false;
+        el.title.innerHTML = 'Judging<br><span class="cd-title-accent">Has Closed</span>';
+        el.sub.innerHTML = 'The judging period ended on<br><b>Saturday, 8 November 2026, 3 PM</b>.';
+        el.foot.innerHTML = 'Judge sign-in is no longer available.<br>Final results will be announced by the committee.';
+        clearInterval(timer);
+        return;
+      }
+
+      // ----- State 2: judging is open -----
+      if (now >= OPEN_AT) {
+        el.countdown.hidden = true;
+        el.open.hidden = false;
+        el.closed.hidden = true;
+        el.title.innerHTML = 'Judging Platform<br><span class="cd-title-accent">Is Open</span>';
+        el.sub.innerHTML = 'Scoring is now open. Judges may sign in to begin evaluating projects.';
+        el.foot.innerHTML = 'Results will be published after the judging period.';
+        return; // keep ticking so it flips to "closed" exactly at 15:00
+      }
+
+      // ----- State 1: before judging opens (countdown) -----
+      const diff = OPEN_AT - now;
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      el.days.textContent = pad(d);
+      el.hours.textContent = pad(h);
+      el.mins.textContent = pad(m);
+      el.secs.textContent = pad(s);
+    }
+
+    render();
+    const timer = setInterval(render, 1000);
+  </script>
+</body>
+
+</html>

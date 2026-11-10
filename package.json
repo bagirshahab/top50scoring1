@@ -1,0 +1,16 @@
+{
+  "name": "penjurian-aiforall-hackathon",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistem Penjurian Karya HTML — AI For All Hackathon 2026",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.5",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

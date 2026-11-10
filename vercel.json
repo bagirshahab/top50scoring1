@@ -1,0 +1,10 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/preview/:code",
+      "destination": "/api/preview?code=:code"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Judge Panel — AI For All Hackathon Judging</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-mark">⚖️</span>
+      <span class="brand-text"><b>AI FOR ALL</b> Judging<span class="brand-sub">JUDGE PANEL</span></span>
+    </div>
+    <div class="topbar-right">
+      <span class="who">Judge: <b id="who-name">—</b></span>
+      <span class="badge-role judge">Judge</span>
+      <button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="page-head">
+      <h1>Participant Projects</h1>
+      <p>Click a project to see its full preview, then submit your scores. Scores can be updated during the judging period.</p>
+    </div>
+
+    <!-- Judge stats -->
+    <section class="stats" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total Projects</div></div>
+      <div class="stat"><div class="stat-num" id="stat-done">0</div><div class="stat-label">You Have Scored</div></div>
+      <div class="stat"><div class="stat-num" id="stat-left">0</div><div class="stat-label">Not Yet Scored</div></div>
+    </section>
+
+    <!-- Project grid -->
+    <section id="work-grid" class="work-grid">
+      <div class="empty" style="grid-column:1/-1"><div class="empty-ic">⏳</div>Loading projects...</div>
+    </section>
+  </main>
+
+  <!-- Scoring modal -->
+  <div id="score-modal" class="modal" hidden>
+    <div class="modal-backdrop" onclick="closeScore()"></div>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="score-title">Project Scoring</h3>
+        <button class="modal-close" onclick="closeScore()">&times;</button>
+      </div>
+
+      <!-- Preview -->
+      <div class="modal-preview">
+        <iframe id="score-frame" sandbox="allow-scripts" title="Project Preview"></iframe>
+      </div>
+
+      <!-- Scoring form -->
+      <div class="modal-score">
+        <div style="margin-bottom:14px">
+          <span class="code-pill" id="score-code">KARYA-00</span>
+          <span id="score-status" style="margin-left:8px"></span>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:6px">Score each parameter 1–100: drag the slider <b>or click the ✎ box to type</b>. <b>%</b> = weight in the final score. Hover <b>i</b> for details.</div>
+        </div>
+
+        <form id="score-form">
+          <!-- 5 parameters generated via JS -->
+          <div id="score-params"></div>
+
+          <div class="score-total">
+            <span class="st-label">Weighted Score <span style="font-weight:500;color:var(--muted);font-size:12px">/ 100</span></span>
+            <span class="st-val" id="score-total-val">0</span>
+          </div>
+
+          <div class="field">
+            <label>Comment (optional)</label>
+            <textarea id="score-comment" placeholder="A short note about this project..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="score-submit">Submit Score</button>
+          <div id="score-msg" class="msg"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">© 2026 AI For All Hackathon — Judging System</p>
+
+  <script src="app.js"></script>
+  <script src="juri.js"></script>
+</body>
+
+</html>
