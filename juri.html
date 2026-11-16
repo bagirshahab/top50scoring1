@@ -3,21 +3,20 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Judge Panel — AI For All Hackathon Judging</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Judge Panel — AI For All Demo Day</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
 
 <body>
-  <!-- Topbar -->
   <header class="topbar">
     <div class="brand">
       <span class="logo-mark">⚖️</span>
-      <span class="brand-text"><b>AI FOR ALL</b> Judging<span class="brand-sub">JUDGE PANEL</span></span>
+      <span class="brand-text"><b>AI FOR ALL</b> Demo Day<span class="brand-sub">JUDGE PANEL</span></span>
     </div>
     <div class="topbar-right">
-      <span class="who">Judge: <b id="who-name">—</b></span>
+      <span class="who hide-sm">Judge: <b id="who-name">—</b></span>
       <span class="badge-role judge">Judge</span>
       <button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Sign Out</button>
     </div>
@@ -25,68 +24,85 @@
 
   <main class="wrap">
     <div class="page-head">
-      <h1>Participant Projects</h1>
-      <p>Click a project to see its full preview, then submit your scores. Scores can be updated during the judging period.</p>
+      <span class="eyebrow">Round 2 · Top 20 → Top 5</span>
+      <h1>Projects in presentation order</h1>
+      <p>Tap a project to score it. You can open its live link and change your scores any time while judging is open.</p>
     </div>
 
-    <!-- Judge stats -->
-    <section class="stats" style="grid-template-columns:repeat(3,1fr)">
-      <div class="stat"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total Projects</div></div>
-      <div class="stat"><div class="stat-num" id="stat-done">0</div><div class="stat-label">You Have Scored</div></div>
-      <div class="stat"><div class="stat-num" id="stat-left">0</div><div class="stat-label">Not Yet Scored</div></div>
+    <section class="progress-card">
+      <div class="progress-top">
+        <div class="progress-stats">
+          <div><b id="stat-done">0</b><span>Scored</span></div>
+          <div><b id="stat-left">0</b><span>Remaining</span></div>
+          <div><b id="stat-total">0</b><span>Total</span></div>
+        </div>
+        <div class="progress-pct" id="progress-pct">0%</div>
+      </div>
+      <div class="progress-bar"><div id="progress-fill"></div></div>
     </section>
 
-    <!-- Project grid -->
-    <section id="work-grid" class="work-grid">
-      <div class="empty" style="grid-column:1/-1"><div class="empty-ic">⏳</div>Loading projects...</div>
+    <section id="work-list" class="work-list">
+      <div class="empty"><div class="empty-ic">⏳</div>Loading projects...</div>
     </section>
   </main>
 
-  <!-- Scoring modal -->
-  <div id="score-modal" class="modal" hidden>
-    <div class="modal-backdrop" onclick="closeScore()"></div>
-    <div class="modal-card">
-      <div class="modal-head">
-        <h3 id="score-title">Project Scoring</h3>
-        <button class="modal-close" onclick="closeScore()">&times;</button>
-      </div>
-
-      <!-- Preview -->
-      <div class="modal-preview">
-        <iframe id="score-frame" sandbox="allow-scripts" title="Project Preview"></iframe>
-      </div>
-
-      <!-- Scoring form -->
-      <div class="modal-score">
-        <div style="margin-bottom:14px">
-          <span class="code-pill" id="score-code">KARYA-00</span>
-          <span id="score-status" style="margin-left:8px"></span>
-          <div style="font-size:12.5px;color:var(--muted);margin-top:6px">Score each parameter 1–100: drag the slider <b>or click the ✎ box to type</b>. <b>%</b> = weight in the final score. Hover <b>i</b> for details.</div>
+  <!-- Scoring sheet (full screen on tablets) -->
+  <div id="score-modal" class="sheet" hidden>
+    <div class="sheet-bar">
+      <button class="btn btn-ghost sheet-back" onclick="closeScore()">← Back</button>
+      <div class="sheet-title">
+        <span class="order-badge" id="score-order">#1</span>
+        <div>
+          <div class="sheet-name" id="score-title">Project</div>
+          <div class="sheet-team" id="score-team"></div>
         </div>
+      </div>
+      <div class="sheet-total">
+        <span>Weighted</span>
+        <b id="score-total-val">0.00</b>
+      </div>
+    </div>
 
+    <div class="sheet-tabs" role="tablist">
+      <button class="sheet-tab active" data-pane="score" onclick="setPane('score')">Score</button>
+      <button class="sheet-tab" data-pane="project" onclick="setPane('project')">Project</button>
+    </div>
+
+    <div class="sheet-body">
+      <!-- Project pane -->
+      <section class="pane pane-project" id="pane-project" hidden>
+        <div class="proj-bar">
+          <span class="proj-url" id="score-url"></span>
+          <a class="btn btn-cyan btn-sm" id="score-open" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a>
+        </div>
+        <div class="proj-frame">
+          <iframe id="score-frame" title="Project" referrerpolicy="no-referrer"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
+          <div class="proj-note">If the page stays blank, the site does not allow embedding. Use <b>Open in new tab</b>.</div>
+        </div>
+      </section>
+
+      <!-- Score pane -->
+      <section class="pane pane-score" id="pane-score">
         <form id="score-form">
-          <!-- 5 parameters generated via JS -->
+          <div id="score-status" class="score-status"></div>
           <div id="score-params"></div>
 
-          <div class="score-total">
-            <span class="st-label">Weighted Score <span style="font-weight:500;color:var(--muted);font-size:12px">/ 100</span></span>
-            <span class="st-val" id="score-total-val">0</span>
-          </div>
-
           <div class="field">
-            <label>Comment (optional)</label>
+            <label for="score-comment">Comment <span class="opt">(optional)</span></label>
             <textarea id="score-comment" placeholder="A short note about this project..."></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block" id="score-submit">Submit Score</button>
-          <div id="score-msg" class="msg"></div>
+          <div class="submit-bar">
+            <div id="score-msg" class="msg"></div>
+            <button type="submit" class="btn btn-primary btn-lg" id="score-submit">Submit Score</button>
+          </div>
         </form>
-      </div>
+      </section>
     </div>
   </div>
 
-  <p class="foot">© 2026 AI For All Hackathon — Judging System</p>
-
+  <script src="criteria.js"></script>
   <script src="app.js"></script>
   <script src="juri.js"></script>
 </body>

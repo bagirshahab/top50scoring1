@@ -1,32 +1,30 @@
 // =====================================================================
 //  /api/scores  — Scoring by judges
 //
-//  GET  /api/scores?work_id=<uuid>   -> get the signed-in judge's score
-//                                        for one project (so it can be edited)
+//  GET  /api/scores?work_id=<uuid>   -> the signed-in judge's score for one project
 //  POST /api/scores                  -> save / update a score (JUDGE)
-//     body: { work_id, problem, solution, evidence, feasibility, ux, comment }
-//     Each parameter is on a 1..100 scale. One judge = one row per project
-//     (UNIQUE work_id+judge_id -> upsert).
+//     body: { work_id, prototype, problem, solution, feasibility, pitch, comment }
+//     Each criterion is 1..100. One judge = one row per project (upsert).
 //
-//  Weighted scoring (final score on a 0-100 scale):
-//     weighted = (problem*25 + solution*25 + evidence*15 + feasibility*15 + ux*20) / 100
+//  Demo Day criteria and weights (final score 0-100):
+//     Working prototype 30 · Problem & Impact 20 · Solution Fit & Insight 20
+//     Feasibility & Risk 15 · Pitch & Team 15
 // =====================================================================
 import { sql, setCors, parseBody, requireRole, verifyToken, withRetry } from "./_lib.js";
 
-// Parameter keys and their weights (must sum to 100)
 const WEIGHTS = {
-  problem: 25,
-  solution: 25,
-  evidence: 15,
+  prototype: 30,
+  problem: 20,
+  solution: 20,
   feasibility: 15,
-  ux: 20,
+  pitch: 15,
 };
 const PARAMS = Object.keys(WEIGHTS);
 
 function computeWeighted(vals) {
   let sum = 0;
   for (const p of PARAMS) sum += vals[p] * WEIGHTS[p];
-  return Math.round((sum / 100) * 100) / 100; // 0-100, 2 decimals
+  return Math.round((sum / 100) * 100) / 100;
 }
 
 export default async function handler(req, res) {
@@ -34,7 +32,6 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   try {
-    // -------- GET: this judge's score for one project --------
     if (req.method === "GET") {
       const judge = verifyToken(req);
       if (!judge || judge.role !== "judge") {
@@ -44,7 +41,7 @@ export default async function handler(req, res) {
       if (!workId) return res.status(400).json({ error: "work_id is required." });
 
       const rows = await sql`
-        SELECT problem, solution, evidence, feasibility, ux, comment, weighted, total
+        SELECT prototype, problem, solution, feasibility, pitch, comment, weighted, total
         FROM pjt_scores
         WHERE work_id = ${workId} AND judge_id = ${judge.id}
         LIMIT 1
@@ -52,7 +49,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ score: rows[0] || null });
     }
 
-    // -------- POST: save / update a score --------
     if (req.method === "POST") {
       const judge = requireRole(req, res, "judge");
       if (!judge) return;
@@ -61,7 +57,6 @@ export default async function handler(req, res) {
       const workId = body.work_id;
       if (!workId) return res.status(400).json({ error: "work_id is required." });
 
-      // Validate each parameter 1..100
       const vals = {};
       for (const p of PARAMS) {
         const n = parseInt(body[p], 10);
@@ -74,24 +69,21 @@ export default async function handler(req, res) {
       const weighted = computeWeighted(vals);
       const comment = (body.comment || "").toString().trim().slice(0, 2000) || null;
 
-      // Make sure the project exists (retry on transient DB errors; read-only)
       const w = await withRetry(() => sql`SELECT id FROM pjt_works WHERE id = ${workId} LIMIT 1`);
       if (!w[0]) return res.status(404).json({ error: "Project not found." });
 
-      // Upsert based on UNIQUE(work_id, judge_id).
-      // Idempotent, so it is safe to retry on transient DB errors.
       await withRetry(() => sql`
         INSERT INTO pjt_scores
-          (work_id, judge_id, problem, solution, evidence, feasibility, ux, comment, weighted, total, created_at, updated_at)
+          (work_id, judge_id, prototype, problem, solution, feasibility, pitch, comment, weighted, total, created_at, updated_at)
         VALUES
-          (${workId}, ${judge.id}, ${vals.problem}, ${vals.solution}, ${vals.evidence},
-           ${vals.feasibility}, ${vals.ux}, ${comment}, ${weighted}, ${total}, NOW(), NOW())
+          (${workId}, ${judge.id}, ${vals.prototype}, ${vals.problem}, ${vals.solution},
+           ${vals.feasibility}, ${vals.pitch}, ${comment}, ${weighted}, ${total}, NOW(), NOW())
         ON CONFLICT (work_id, judge_id) DO UPDATE SET
+          prototype   = EXCLUDED.prototype,
           problem     = EXCLUDED.problem,
           solution    = EXCLUDED.solution,
-          evidence    = EXCLUDED.evidence,
           feasibility = EXCLUDED.feasibility,
-          ux          = EXCLUDED.ux,
+          pitch       = EXCLUDED.pitch,
           comment     = EXCLUDED.comment,
           weighted    = EXCLUDED.weighted,
           total       = EXCLUDED.total,

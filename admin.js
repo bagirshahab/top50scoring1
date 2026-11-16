@@ -6,13 +6,14 @@ if (admin) document.getElementById("who-name").textContent = admin.name || "Admi
 
 let RANKING = [];
 let DETAILS = [];
+let WORKS = [];
+let MAX_WORKS = 20;
+let editingId = null;
 
 // ---------- Tabs ----------
 function switchTab(name) {
   document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === name));
-  ["ranking", "works", "judges"].forEach((n) => {
-    document.getElementById("tab-" + n).hidden = n !== name;
-  });
+  ["ranking", "works", "judges"].forEach((n) => { document.getElementById("tab-" + n).hidden = n !== name; });
   if (name === "works") loadWorks();
   if (name === "judges") loadJudges();
   if (name === "ranking") loadRanking();
@@ -26,16 +27,14 @@ async function loadRanking() {
     RANKING = data.ranking || [];
     DETAILS = data.details || [];
 
-    // Stats
     document.getElementById("stat-works").textContent = data.stats.totalWorks;
     document.getElementById("stat-judges").textContent = data.stats.totalJudges;
-    const scoredCount = DETAILS.length;
-    document.getElementById("stat-scored").textContent = scoredCount;
+    document.getElementById("stat-scored").textContent = DETAILS.length;
     const top = RANKING.find((r) => Number(r.judge_count) > 0);
-    document.getElementById("stat-top").textContent = top ? top.code : "—";
+    document.getElementById("stat-top").textContent = top ? top.project_title : "—";
 
     if (!RANKING.length) {
-      body.innerHTML = `<tr><td colspan="5" class="empty"><div class="empty-ic">📭</div>No projects yet. Add them in the "Projects" tab.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="5" class="empty"><div class="empty-ic">📭</div>No projects yet. Add them in the "Projects &amp; Order" tab.</td></tr>`;
       return;
     }
 
@@ -43,126 +42,200 @@ async function loadRanking() {
       const rank = i + 1;
       const rankCls = rank <= 3 ? `rank-${rank}` : "";
       const hasScore = Number(r.judge_count) > 0;
+      const cut = rank === TOP_N && RANKING.length > TOP_N
+        ? `<tr class="cut-row"><td colspan="5">Top ${TOP_N} advance · cut line</td></tr>` : "";
       return `
-        <tr style="cursor:pointer" onclick="openDetail('${r.id}')">
+        <tr class="clickable ${rank <= TOP_N && hasScore ? "in-top" : ""}" onclick="openDetail('${esc(r.id)}')">
           <td><span class="rank-badge ${rankCls}">${rank}</span></td>
-          <td><span class="code-pill">${esc(r.code)}</span></td>
           <td>
-            <div style="font-weight:700">${esc(r.project_title)}</div>
-            <div style="font-size:12.5px;color:var(--muted)">${esc(r.team_name)}${r.category ? " · " + esc(r.category) : ""}</div>
+            <div class="cell-title">${esc(r.project_title)}</div>
+            <div class="cell-sub">${esc(r.team_name)}${r.category ? " · " + esc(r.category) : ""}</div>
           </td>
-          <td>${hasScore ? `<span class="chip done">${r.judge_count} judge${Number(r.judge_count) > 1 ? "s" : ""}</span>` : `<span class="chip pending">none</span>`}</td>
+          <td><span class="order-badge sm">${r.position || "–"}</span></td>
+          <td>${hasScore ? `<span class="chip done">${r.judge_count}</span>` : `<span class="chip pending">none</span>`}</td>
           <td><span class="score-cell">${hasScore ? Number(r.avg_weighted).toFixed(2) : "—"}</span></td>
-        </tr>`;
+        </tr>${cut}`;
     }).join("");
   } catch (err) {
-    body.innerHTML = `<tr><td colspan="6" class="empty">${esc(err.message)}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5" class="empty">${esc(err.message)}</td></tr>`;
   }
 }
 
 function openDetail(workId) {
   const work = RANKING.find((r) => r.id === workId);
+  if (!work) return;
   const rows = DETAILS.filter((d) => d.work_id === workId);
-  document.getElementById("detail-title").textContent = `Score Breakdown — ${work.project_title}`;
+  document.getElementById("detail-title").textContent = work.project_title;
+
+  document.getElementById("detail-head").innerHTML =
+    "<tr><th>Judge</th>" +
+    CRITERIA.map((c) => `<th title="${esc(c.name)} (${c.weight}%)">${esc(c.short)}<small>${c.weight}%</small></th>`).join("") +
+    "<th>Weighted</th></tr>";
 
   const body = document.getElementById("detail-body");
+  const comments = document.getElementById("detail-comments");
   if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="7" class="empty">No judge has scored this project yet.</td></tr>`;
-    document.getElementById("detail-comments").innerHTML = "";
+    body.innerHTML = `<tr><td colspan="${CRITERIA.length + 2}" class="empty">No judge has scored this project yet.</td></tr>`;
+    comments.innerHTML = "";
   } else {
     body.innerHTML = rows.map((d) => `
       <tr>
-        <td style="font-weight:600">${esc(d.judge_name)}</td>
-        <td>${d.problem}</td><td>${d.solution}</td><td>${d.evidence}</td>
-        <td>${d.feasibility}</td><td>${d.ux}</td>
+        <td class="cell-title">${esc(d.judge_name)}</td>
+        ${CRITERIA.map((c) => `<td>${d[c.key]}</td>`).join("")}
         <td class="score-cell">${Number(d.weighted).toFixed(2)}</td>
       </tr>`).join("") + `
-      <tr style="background:rgba(251,191,36,0.08)">
-        <td style="font-weight:800">Average</td>
-        <td>${work.avg_problem}</td><td>${work.avg_solution}</td><td>${work.avg_evidence}</td>
-        <td>${work.avg_feasibility}</td><td>${work.avg_ux}</td>
+      <tr class="avg-row">
+        <td class="cell-title">Average</td>
+        ${CRITERIA.map((c) => `<td>${work["avg_" + c.key]}</td>`).join("")}
         <td class="score-cell">${Number(work.avg_weighted).toFixed(2)}</td>
       </tr>`;
 
-    const comments = rows.filter((d) => d.comment);
-    document.getElementById("detail-comments").innerHTML = comments.length
-      ? `<h2 style="font-size:14px;margin-bottom:8px">💬 Judge Comments</h2>` +
-        comments.map((d) => `<div style="background:var(--card-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px"><b style="font-size:13px">${esc(d.judge_name)}:</b> <span style="color:var(--muted);font-size:13px">${esc(d.comment)}</span></div>`).join("")
+    const withComment = rows.filter((d) => d.comment);
+    comments.innerHTML = withComment.length
+      ? `<h2 style="font-size:14px;margin-bottom:8px">💬 Judge comments</h2>` +
+        withComment.map((d) => `<div class="comment-box"><b>${esc(d.judge_name)}:</b> <span>${esc(d.comment)}</span></div>`).join("")
       : "";
   }
   document.getElementById("detail-modal").hidden = false;
 }
 function closeDetail() { document.getElementById("detail-modal").hidden = true; }
 
-// ---------- PROJECTS ----------
+// ---------- PROJECTS & ORDER ----------
 async function loadWorks() {
-  const body = document.getElementById("works-body");
+  const list = document.getElementById("works-list");
   try {
     const data = await apiFetch("/api/works");
-    const works = data.works || [];
-    if (!works.length) {
-      body.innerHTML = `<tr><td colspan="3" class="empty"><div class="empty-ic">📦</div>No projects yet.</td></tr>`;
-      return;
-    }
-    body.innerHTML = works.map((w) => `
-      <tr>
-        <td><span class="code-pill">${esc(w.code)}</span></td>
-        <td>
-          <div style="font-weight:700">${esc(w.project_title)}</div>
-          <div style="font-size:12.5px;color:var(--muted)">${esc(w.team_name)}</div>
-        </td>
-        <td style="text-align:right;white-space:nowrap">
-          <button class="btn btn-ghost btn-sm" data-code="${esc(w.code)}" data-title="${esc(w.project_title)}" onclick="openPreview(this.dataset.code, this.dataset.title)">Preview</button>
-          <button class="btn btn-danger btn-sm" data-id="${esc(w.id)}" data-title="${esc(w.project_title)}" onclick="deleteWork(this.dataset.id, this.dataset.title)">Delete</button>
-        </td>
-      </tr>`).join("");
+    WORKS = data.works || [];
+    MAX_WORKS = data.max || 20;
+    renderWorks();
   } catch (err) {
-    body.innerHTML = `<tr><td colspan="3" class="empty">${esc(err.message)}</td></tr>`;
+    list.innerHTML = `<div class="empty">${esc(err.message)}</div>`;
   }
 }
 
-// Read the HTML file when selected
-document.getElementById("w-file").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const text = await file.text();
-  document.getElementById("w-html").value = text;
-  toast("HTML file loaded into the text box.");
-});
+function renderWorks() {
+  const list = document.getElementById("works-list");
+  document.getElementById("works-count").textContent = `${WORKS.length} / ${MAX_WORKS}`;
+  document.getElementById("stat-works").textContent = WORKS.length;
+  document.getElementById("work-submit").disabled = !editingId && WORKS.length >= MAX_WORKS;
+
+  if (!WORKS.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-ic">📋</div>No projects yet. Add the first one.</div>`;
+    return;
+  }
+  const opts = (cur) => WORKS.map((_, k) => `<option value="${k + 1}" ${k + 1 === cur ? "selected" : ""}>${k + 1}</option>`).join("");
+
+  list.innerHTML = WORKS.map((w, i) => `
+    <div class="order-item">
+      <span class="order-badge">${i + 1}</span>
+      <div class="oi-main">
+        <div class="cell-title">${esc(w.project_title)}</div>
+        <div class="cell-sub">${esc(w.team_name)}${w.category ? " · " + esc(w.category) : ""}</div>
+        <a class="oi-link" href="${esc(w.project_url)}" target="_blank" rel="noopener noreferrer">${esc(w.project_url)}</a>
+      </div>
+      <div class="oi-controls">
+        <div class="oi-move">
+          <button class="icon-btn" ${i === 0 ? "disabled" : ""} onclick="moveWork(${i}, ${i - 1})" aria-label="Move up">▲</button>
+          <select class="oi-select" onchange="moveWork(${i}, this.value - 1)" aria-label="Position">${opts(i + 1)}</select>
+          <button class="icon-btn" ${i === WORKS.length - 1 ? "disabled" : ""} onclick="moveWork(${i}, ${i + 1})" aria-label="Move down">▼</button>
+        </div>
+        <div class="oi-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editWork('${esc(w.id)}')">Edit</button>
+          <button class="btn btn-danger btn-sm" data-id="${esc(w.id)}" data-title="${esc(w.project_title)}" onclick="deleteWork(this.dataset.id, this.dataset.title)">Delete</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+async function moveWork(from, to) {
+  to = parseInt(to, 10);
+  if (isNaN(to) || to < 0 || to >= WORKS.length || to === from) { renderWorks(); return; }
+  const prev = WORKS.slice();
+  const next = WORKS.slice();
+  next.splice(to, 0, next.splice(from, 1)[0]);
+  WORKS = next;
+  renderWorks();
+  try {
+    await apiFetch("/api/works", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order: WORKS.map((w) => w.id) }),
+    });
+    toast(`Moved to position ${to + 1}.`);
+  } catch (err) {
+    WORKS = prev;
+    renderWorks();
+    toast(err.message, "error");
+  }
+}
+
+function editWork(id) {
+  const w = WORKS.find((x) => x.id === id);
+  if (!w) return;
+  editingId = id;
+  document.getElementById("w-team").value = w.team_name;
+  document.getElementById("w-title").value = w.project_title;
+  document.getElementById("w-category").value = w.category || "";
+  document.getElementById("w-url").value = w.project_url || "";
+  document.getElementById("work-form-title").textContent = "✏️ Edit Project";
+  document.getElementById("work-submit").textContent = "Update Project";
+  document.getElementById("work-submit").disabled = false;
+  document.getElementById("work-cancel").hidden = false;
+  document.getElementById("work-form").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function resetWorkForm() {
+  editingId = null;
+  document.getElementById("work-form").reset();
+  document.getElementById("work-form-title").textContent = "➕ Add Project";
+  document.getElementById("work-submit").textContent = "Save Project";
+  document.getElementById("work-cancel").hidden = true;
+  document.getElementById("work-msg").textContent = "";
+  renderWorks();
+}
 
 document.getElementById("work-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("work-submit");
   const msg = document.getElementById("work-msg");
-  msg.className = "msg";
-  msg.textContent = "";
+  msg.className = "msg"; msg.textContent = "";
 
   const payload = {
     team_name: document.getElementById("w-team").value.trim(),
     project_title: document.getElementById("w-title").value.trim(),
     category: document.getElementById("w-category").value.trim(),
-    html_content: document.getElementById("w-html").value,
+    project_url: document.getElementById("w-url").value.trim(),
   };
-  if (!payload.team_name || !payload.project_title || !payload.html_content.trim()) {
-    msg.className = "msg error"; msg.textContent = "Team name, title, and HTML are required.";
+  if (!payload.team_name || !payload.project_title || !payload.project_url) {
+    msg.className = "msg error"; msg.textContent = "Team name, title, and project link are required.";
     return;
   }
 
+  const label = btn.textContent;
   btn.disabled = true; btn.textContent = "Saving...";
   try {
-    const data = await apiFetch("/api/works", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    toast(`Project saved: ${data.work.code}`);
-    e.target.reset();
-    document.getElementById("w-html").value = "";
-    loadWorks();
+    if (editingId) {
+      await apiFetch("/api/works", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingId, ...payload }),
+      });
+      toast("Project updated.");
+    } else {
+      const data = await apiFetch("/api/works", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      toast(`Project added at position ${data.work.position}.`);
+    }
+    editingId = null;
+    resetWorkForm();
+    await loadWorks();
   } catch (err) {
     msg.className = "msg error"; msg.textContent = err.message;
-  } finally {
-    btn.disabled = false; btn.textContent = "Save Project";
+    btn.textContent = label;
+    btn.disabled = false;
   }
 });
 
@@ -171,19 +244,9 @@ async function deleteWork(id, title) {
   try {
     await apiFetch(`/api/works?id=${encodeURIComponent(id)}`, { method: "DELETE" });
     toast("Project deleted.");
+    if (editingId === id) resetWorkForm();
     loadWorks();
   } catch (err) { toast(err.message, "error"); }
-}
-
-// ---------- PREVIEW ----------
-function openPreview(code, title) {
-  document.getElementById("preview-title").textContent = "Preview — " + title;
-  document.getElementById("preview-frame").src = `/preview/${encodeURIComponent(code)}`;
-  document.getElementById("preview-modal").hidden = false;
-}
-function closePreview() {
-  document.getElementById("preview-modal").hidden = true;
-  document.getElementById("preview-frame").src = "about:blank";
 }
 
 // ---------- JUDGES ----------
@@ -192,13 +255,14 @@ async function loadJudges() {
   try {
     const data = await apiFetch("/api/judges");
     const judges = data.judges || [];
+    document.getElementById("stat-judges").textContent = judges.length;
     if (!judges.length) {
       body.innerHTML = `<tr><td colspan="4" class="empty"><div class="empty-ic">👨‍⚖️</div>No judges yet.</td></tr>`;
       return;
     }
     body.innerHTML = judges.map((j) => `
       <tr>
-        <td style="font-weight:600">${esc(j.name)}</td>
+        <td class="cell-title">${esc(j.name)}</td>
         <td><span class="code-pill">${esc(j.username)}</span></td>
         <td>${j.scored_count}</td>
         <td style="text-align:right"><button class="btn btn-danger btn-sm" data-id="${esc(j.id)}" data-name="${esc(j.name)}" onclick="deleteJudge(this.dataset.id, this.dataset.name)">Delete</button></td>
@@ -251,4 +315,5 @@ async function deleteJudge(id, name) {
 }
 
 // ---------- Init ----------
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDetail(); });
 loadRanking();

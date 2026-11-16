@@ -47,8 +47,7 @@ export default async function handler(req, res) {
       FROM pjt_works w
       LEFT JOIN pjt_scores s ON s.work_id = w.id
       GROUP BY w.id
-      ORDER BY avg_weighted DESC, judge_count DESC,
-               NULLIF(regexp_replace(w.code, '\\D', '', 'g'), '')::int NULLS LAST, w.code
+      ORDER BY avg_weighted DESC, judge_count DESC, w.position NULLS LAST, w.code
     `;
 
     const totalWorks = ranking.length;

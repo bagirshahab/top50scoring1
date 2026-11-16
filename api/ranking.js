@@ -21,25 +21,24 @@ export default async function handler(req, res) {
     // Per-project aggregate
     const ranking = await sql`
       SELECT
-        w.id, w.code, w.team_name, w.project_title, w.category,
-        COUNT(s.id)                                       AS judge_count,
-        COALESCE(ROUND(AVG(s.weighted)::numeric, 2), 0)   AS avg_weighted,
-        COALESCE(ROUND(AVG(s.problem)::numeric, 1), 0)    AS avg_problem,
-        COALESCE(ROUND(AVG(s.solution)::numeric, 1), 0)   AS avg_solution,
-        COALESCE(ROUND(AVG(s.evidence)::numeric, 1), 0)   AS avg_evidence,
+        w.id, w.code, w.team_name, w.project_title, w.category, w.position,
+        COUNT(s.id)                                        AS judge_count,
+        COALESCE(ROUND(AVG(s.weighted)::numeric, 2), 0)    AS avg_weighted,
+        COALESCE(ROUND(AVG(s.prototype)::numeric, 1), 0)   AS avg_prototype,
+        COALESCE(ROUND(AVG(s.problem)::numeric, 1), 0)     AS avg_problem,
+        COALESCE(ROUND(AVG(s.solution)::numeric, 1), 0)    AS avg_solution,
         COALESCE(ROUND(AVG(s.feasibility)::numeric, 1), 0) AS avg_feasibility,
-        COALESCE(ROUND(AVG(s.ux)::numeric, 1), 0)         AS avg_ux
+        COALESCE(ROUND(AVG(s.pitch)::numeric, 1), 0)       AS avg_pitch
       FROM pjt_works w
       LEFT JOIN pjt_scores s ON s.work_id = w.id
       GROUP BY w.id
-      ORDER BY avg_weighted DESC, judge_count DESC,
-               NULLIF(regexp_replace(w.code, '\\D', '', 'g'), '')::int NULLS LAST, w.code
+      ORDER BY avg_weighted DESC, judge_count DESC, w.position NULLS LAST, w.code
     `;
 
-    // Per-judge score breakdown (shown when the admin expands a project)
+    // Per-judge score breakdown (shown when the admin opens a project)
     const details = await sql`
-      SELECT s.work_id, j.name AS judge_name, s.problem, s.solution,
-             s.evidence, s.feasibility, s.ux, s.weighted, s.total, s.comment, s.updated_at
+      SELECT s.work_id, j.name AS judge_name, s.prototype, s.problem, s.solution,
+             s.feasibility, s.pitch, s.weighted, s.total, s.comment, s.updated_at
       FROM pjt_scores s
       JOIN pjt_judges j ON j.id = s.judge_id
       ORDER BY s.weighted DESC

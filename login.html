@@ -3,8 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login — AI For All Hackathon 2026 Judging</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Login — AI For All Demo Day Judging</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 </head>
@@ -15,15 +15,15 @@
       <div class="login-logo">
         <span class="logo-mark">⚖️</span>
       </div>
-      <h1>Judging System</h1>
-      <p class="login-sub">AI For All Hackathon 2026 — Project Evaluation Portal</p>
+      <h1>Demo Day Judging</h1>
+      <p class="login-sub">Round 2 · Top 20 → Top 5</p>
 
       <!-- Notice shown while judging is outside its window -->
       <div id="pre-open-notice" class="pre-open-notice" hidden>
-        ⏳ Judging has not opened yet. Judge sign-in unlocks on <b>6 November 2026</b>.
+        ⏳ Judging has not opened yet. Judge sign-in will unlock when judging opens.
       </div>
       <div id="closed-notice" class="pre-open-notice closed" hidden>
-        🔒 Judging closed on <b>8 November 2026, 3 PM</b>. Judge sign-in is no longer available.
+        🔒 Judging has closed. Judge sign-in is no longer available.
       </div>
 
       <!-- Role selection -->
@@ -79,7 +79,7 @@
       if (role === 'judge' && !JUDGING_OPEN) {
         document.getElementById('login-msg').textContent = AFTER_CLOSE
           ? 'Judging has closed. Judge sign-in is no longer available.'
-          : 'Judge sign-in opens on 6 November 2026.';
+          : 'Judge sign-in has not opened yet.';
         document.getElementById('login-msg').className = 'msg error';
         return;
       }

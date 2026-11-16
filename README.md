@@ -1,3 +1,15 @@
+# Demo Day Judging — AI For All Hackathon 2026 (Top 20 → Top 5)
+
+Perubahan terbaru (versi ini):
+- Proyek berupa **link web** (bukan file HTML), maksimal 20.
+- Admin mengatur **urutan presentasi 1–20** (tombol ▲ ▼ atau pilih nomor) di tab *Projects & Order*.
+- Kriteria Demo Day: Working prototype 30%, Problem & Impact 20%, Solution Fit & Insight 20%, Feasibility & Risk 15%, Pitch & Team 15%. Didefinisikan di `criteria.js` dan `api/scores.js`.
+- Tampilan juri dan admin dioptimalkan untuk tablet (tombol besar, panel skor + preview link berdampingan di layar lebar).
+- Database: jalankan `schema.sql` untuk instalasi baru. Tabel memakai prefix `pjt_`.
+
+Catatan: bagian di bawah ini adalah dokumentasi lama (versi file HTML) dan sebagian sudah tidak berlaku.
+
+---
 # Sistem Penjurian Karya HTML — AI For All Hackathon 2026
 
 Website penjurian untuk menilai karya HTML peserta hackathon. Terdiri dari:
