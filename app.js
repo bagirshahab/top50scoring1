@@ -35,7 +35,7 @@ function confirmLogout() {
     overlay.innerHTML = `
       <div class="modal-backdrop" data-logout-cancel></div>
       <div class="confirm-card">
-        <div class="confirm-ic">👋</div>
+        <div class="confirm-ic">${icon("sign-out")}</div>
         <h3>Sign out?</h3>
         <p>You will be returned to the login page. Are you sure you want to sign out?</p>
         <div class="confirm-actions">

@@ -7,12 +7,14 @@
   <title>Judge Panel — AI For All Demo Day</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="icons.js"></script>
+  <script src="theme.js"></script>
 </head>
 
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="logo-mark">⚖️</span>
+      <span class="logo-mark"><i data-icon="gen-ai"></i></span>
       <span class="brand-text"><b>AI FOR ALL</b> Demo Day<span class="brand-sub">JUDGE PANEL</span></span>
     </div>
     <div class="topbar-right">
@@ -42,14 +44,14 @@
     </section>
 
     <section id="work-list" class="work-list">
-      <div class="empty"><div class="empty-ic">⏳</div>Loading projects...</div>
+      <div class="empty"><div class="empty-ic"><i data-icon="status-in-progress" data-size="big"></i></div>Loading projects...</div>
     </section>
   </main>
 
   <!-- Scoring sheet (full screen on tablets) -->
   <div id="score-modal" class="sheet" hidden>
     <div class="sheet-bar">
-      <button class="btn btn-ghost sheet-back" onclick="closeScore()">← Back</button>
+      <button class="btn btn-ghost sheet-back" onclick="closeScore()"><i data-icon="arrow-left"></i> Back</button>
       <div class="sheet-title">
         <span class="order-badge" id="score-order">#1</span>
         <div>
@@ -74,14 +76,14 @@
       <section class="pane pane-project" id="pane-project" hidden>
         <div class="proj-bar">
           <span class="proj-url" id="score-url"></span>
-          <a class="btn btn-cyan btn-sm" id="score-open" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a>
+          <a class="btn btn-cyan btn-sm" id="score-open" href="#" target="_blank" rel="noopener noreferrer">Open in new tab <i data-icon="external"></i></a>
         </div>
         <div class="proj-frame" id="proj-frame-box">
           <div class="proj-fallback" id="proj-fallback" hidden>
-            <div class="pf-title">⚠ Link unavailable</div>
+            <div class="pf-title"><i data-icon="status-warning"></i> Link unavailable</div>
             <p>This team's website could not be opened. Please use the backup material below. The project is still scored normally.</p>
             <div id="pf-video-embed" class="pf-embed" hidden><iframe id="pf-video-frame" title="Video" allowfullscreen referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe></div>
-            <a id="pf-video" class="btn btn-cyan" href="#" target="_blank" rel="noopener noreferrer" hidden>▶ Watch video ↗</a>
+            <a id="pf-video" class="btn btn-cyan" href="#" target="_blank" rel="noopener noreferrer" hidden><i data-icon="video-on"></i> Watch video <i data-icon="external"></i></a>
             <a id="pf-shot-link" href="#" target="_blank" rel="noopener noreferrer" hidden><img id="pf-shot" alt="Screenshot of the project" /></a>
             <p class="pf-empty" id="pf-empty" hidden>No video or screenshot was provided for this project.</p>
           </div>

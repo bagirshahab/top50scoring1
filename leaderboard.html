@@ -8,30 +8,32 @@
   <meta name="description" content="Live, transparent leaderboard of the AI For All Hackathon 2026 judging." />
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="icons.js"></script>
+  <script src="theme.js"></script>
 </head>
 
 <body>
   <!-- Topbar (public, no auth) -->
   <header class="topbar">
     <div class="brand">
-      <span class="logo-mark">🏆</span>
+      <span class="logo-mark"><i data-icon="gen-ai"></i></span>
       <span class="brand-text"><b>AI FOR ALL</b> Leaderboard<span class="brand-sub">PUBLIC · TRANSPARENT</span></span>
     </div>
     <div class="topbar-right">
-      <button class="btn btn-ghost btn-sm" id="refresh-btn" onclick="loadBoard()">↻ Refresh</button>
+      <button class="btn btn-ghost btn-sm" id="refresh-btn" onclick="loadBoard()"><i data-icon="refresh"></i> Refresh</button>
     </div>
   </header>
 
   <main class="wrap">
     <div class="page-head" style="text-align:center">
-      <h1>🏆 Demo Day Leaderboard</h1>
+      <h1>Demo Day Leaderboard</h1>
       <p>Live ranking by weighted score (0–100). Updated automatically as judges submit their scores. Shared openly for transparency.</p>
       <div id="updated-at" style="font-size:12px;color:var(--muted-2);margin-top:4px"></div>
     </div>
 
     <!-- Scoring rubric (weights) -->
     <section class="card" style="margin-bottom:22px">
-      <h2 style="font-size:15px">📋 Demo Day Criteria</h2>
+      <h2 style="font-size:15px">Demo Day Criteria</h2>
       <p class="card-desc">Each project is scored 1–100 on five criteria. The final score is weighted:</p>
       <div class="rubric" id="rubric"></div>
     </section>
@@ -46,7 +48,7 @@
 
     <!-- Full ranking -->
     <section class="card">
-      <h2>🥇 Full Ranking</h2>
+      <h2>Full Ranking</h2>
       <p class="card-desc">Sorted from highest weighted score.</p>
       <div class="table-wrap">
         <table>
@@ -86,7 +88,7 @@
         if (!res.ok) throw new Error(data.error || "Failed to load leaderboard.");
 
         if (data.published === false) {
-          boardBody.innerHTML = `<tr><td colspan="4" class="empty"><div class="empty-ic">🔒</div>The leaderboard is not available yet. Results will be published during/after the judging period.</td></tr>`;
+          boardBody.innerHTML = `<tr><td colspan="4" class="empty"><div class="empty-ic">${icon("lock-private", "big")}</div>The leaderboard is not available yet. Results will be published during/after the judging period.</td></tr>`;
           document.getElementById("podium").hidden = true;
           document.getElementById("stat-works").textContent = "—";
           document.getElementById("stat-scored").textContent = "—";
@@ -102,7 +104,7 @@
         }
 
         if (!ranking.length) {
-          boardBody.innerHTML = `<tr><td colspan="4" class="empty"><div class="empty-ic">📭</div>No projects yet.</td></tr>`;
+          boardBody.innerHTML = `<tr><td colspan="4" class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet.</td></tr>`;
           document.getElementById("podium").hidden = true;
           return;
         }
@@ -121,7 +123,7 @@
       const scored = ranking.filter((r) => Number(r.judge_count) > 0).slice(0, 3);
       const podium = document.getElementById("podium");
       if (scored.length < 1) { podium.hidden = true; return; }
-      const medals = ["🥇", "🥈", "🥉"];
+      const medals = [0, 1, 2].map(() => icon("star-filled"));
       const order = [1, 0, 2]; // visual: 2nd, 1st, 3rd
       podium.hidden = false;
       podium.innerHTML = order

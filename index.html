@@ -8,6 +8,8 @@
   <meta name="description" content="The AI For All Hackathon 2026 judging platform opens on 6 November 2026." />
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="icons.js"></script>
+  <script src="theme.js"></script>
 </head>
 
 <body>
@@ -37,13 +39,13 @@
 
       <!-- Shown while judging is open -->
       <div id="cd-open" hidden>
-        <p class="cd-open-msg">🎉 The judging platform is now open!</p>
-        <a href="/login" class="btn btn-primary btn-block">Enter Judging Platform →</a>
+        <p class="cd-open-msg"><i data-icon="status-positive"></i> The judging platform is now open!</p>
+        <a href="/login" class="btn btn-primary btn-block">Enter Judging Platform <i data-icon="angle-right"></i></a>
       </div>
 
       <!-- Shown after judging has closed -->
       <div id="cd-closed" hidden>
-        <div class="cd-closed-badge">🔒 Judging Closed</div>
+        <div class="cd-closed-badge"><i data-icon="lock-private"></i> Judging Closed</div>
         <p class="cd-closed-msg">Thank you to all the judges. Scoring is now complete and judge sign-in has been disabled.</p>
       </div>
 

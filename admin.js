@@ -34,7 +34,7 @@ async function loadRanking() {
     document.getElementById("stat-top").textContent = top ? top.project_title : "—";
 
     if (!RANKING.length) {
-      body.innerHTML = `<tr><td colspan="5" class="empty"><div class="empty-ic">📭</div>No projects yet. Add them in the "Projects &amp; Order" tab.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="5" class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet. Add them in the "Projects &amp; Order" tab.</td></tr>`;
       return;
     }
 
@@ -92,7 +92,7 @@ function openDetail(workId) {
 
     const withComment = rows.filter((d) => d.comment);
     comments.innerHTML = withComment.length
-      ? `<h2 style="font-size:14px;margin-bottom:8px">💬 Judge comments</h2>` +
+      ? `<h2 style="font-size:14px;margin-bottom:8px">Judge comments</h2>` +
         withComment.map((d) => `<div class="comment-box"><b>${esc(d.judge_name)}:</b> <span>${esc(d.comment)}</span></div>`).join("")
       : "";
   }
@@ -115,15 +115,15 @@ async function loadWorks() {
 }
 
 function yesNoBadge(label, v) {
-  if (v === true) return `<span class="bdg bdg-yes">${label} ✓</span>`;
-  if (v === false) return `<span class="bdg bdg-no">${label} ✗</span>`;
+  if (v === true) return `<span class="bdg bdg-yes">${icon("status-positive")} ${label}</span>`;
+  if (v === false) return `<span class="bdg bdg-no">${icon("status-negative")} ${label}</span>`;
   return "";
 }
 
 function linkBadge(w) {
-  if (w.link_ok === true) return `<span class="bdg bdg-ok" title="${esc("HTTP " + w.link_status + " · checked " + fmtDate(w.link_checked_at))}">● Link OK</span>`;
-  if (w.link_ok === false) return `<span class="bdg bdg-bad" title="${esc((w.link_note || "Failed") + " · checked " + fmtDate(w.link_checked_at))}">● ${esc(w.link_note || "Link failed")}</span>`;
-  return `<span class="bdg">○ Not checked</span>`;
+  if (w.link_ok === true) return `<span class="bdg bdg-ok" title="${esc("HTTP " + w.link_status + " · checked " + fmtDate(w.link_checked_at))}">${icon("status-positive")} Link OK</span>`;
+  if (w.link_ok === false) return `<span class="bdg bdg-bad" title="${esc((w.link_note || "Failed") + " · checked " + fmtDate(w.link_checked_at))}">${icon("status-negative")} ${esc(w.link_note || "Link failed")}</span>`;
+  return `<span class="bdg">${icon("status-pending")} Not checked</span>`;
 }
 
 function renderWorks() {
@@ -134,7 +134,7 @@ function renderWorks() {
   document.getElementById("check-all-btn").disabled = !WORKS.length;
 
   if (!WORKS.length) {
-    list.innerHTML = `<div class="empty"><div class="empty-ic">📋</div>No projects yet. Add one or import from the submission form.</div>`;
+    list.innerHTML = `<div class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet. Add one or import from the submission form.</div>`;
     return;
   }
   const opts = (cur) => WORKS.map((_, k) => `<option value="${k + 1}" ${k + 1 === cur ? "selected" : ""}>${k + 1}</option>`).join("");
@@ -147,17 +147,17 @@ function renderWorks() {
         <div class="cell-sub">${esc(w.team_name)}${w.category ? " · " + esc(w.category) : ""}</div>
         <div class="bdg-row">
           ${linkBadge(w)}
-          ${w.fallback ? '<span class="bdg bdg-warn">⚠ Fallback</span>' : ""}
+          ${w.fallback ? '<span class="bdg bdg-warn">${icon("status-warning")} Fallback</span>' : ""}
           ${yesNoBadge("Bedrock", w.bedrock_used)}${yesNoBadge("AgentCore", w.agentcore_used)}
-          ${w.video_url ? '<span class="bdg">▶ Video</span>' : ""}${w.screenshot_url ? '<span class="bdg">🖼 Screenshot</span>' : ""}
+          ${w.video_url ? '<span class="bdg">${icon("video-on")} Video</span>' : ""}${w.screenshot_url ? '<span class="bdg">${icon("file")} Screenshot</span>' : ""}
         </div>
         <a class="oi-link" href="${esc(w.project_url)}" target="_blank" rel="noopener noreferrer">${esc(w.project_url)}</a>
       </div>
       <div class="oi-controls">
         <div class="oi-move">
-          <button class="icon-btn" ${i === 0 ? "disabled" : ""} onclick="moveWork(${i}, ${i - 1})" aria-label="Move up">▲</button>
+          <button class="icon-btn" ${i === 0 ? "disabled" : ""} onclick="moveWork(${i}, ${i - 1})" aria-label="Move up">${icon("angle-up")}</button>
           <select class="oi-select" onchange="moveWork(${i}, this.value - 1)" aria-label="Position">${opts(i + 1)}</select>
-          <button class="icon-btn" ${i === WORKS.length - 1 ? "disabled" : ""} onclick="moveWork(${i}, ${i + 1})" aria-label="Move down">▼</button>
+          <button class="icon-btn" ${i === WORKS.length - 1 ? "disabled" : ""} onclick="moveWork(${i}, ${i + 1})" aria-label="Move down">${icon("angle-down")}</button>
         </div>
         <div class="oi-actions">
           <button class="btn btn-ghost btn-sm" onclick="checkLinks('${esc(w.id)}')">Check</button>
@@ -242,7 +242,7 @@ function editWork(id) {
   document.getElementById("w-repo").value = w.repo_url || "";
   document.getElementById("w-fallback").checked = !!w.fallback;
   document.getElementById("w-more").open = !!(w.fallback || w.video_url || w.screenshot_url || w.repo_url);
-  document.getElementById("work-form-title").textContent = "✏️ Edit Project";
+  document.getElementById("work-form-title").textContent = "Edit Project";
   document.getElementById("work-submit").textContent = "Update Project";
   document.getElementById("work-submit").disabled = false;
   document.getElementById("work-cancel").hidden = false;
@@ -253,7 +253,7 @@ function resetWorkForm() {
   editingId = null;
   document.getElementById("work-form").reset();
   document.getElementById("w-more").open = false;
-  document.getElementById("work-form-title").textContent = "➕ Add Project";
+  document.getElementById("work-form-title").textContent = "Add Project";
   document.getElementById("work-submit").textContent = "Save Project";
   document.getElementById("work-cancel").hidden = true;
   document.getElementById("work-msg").textContent = "";
@@ -423,7 +423,7 @@ async function loadJudges() {
     const judges = data.judges || [];
     document.getElementById("stat-judges").textContent = judges.length;
     if (!judges.length) {
-      body.innerHTML = `<tr><td colspan="4" class="empty"><div class="empty-ic">👨‍⚖️</div>No judges yet.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="4" class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No judges yet.</td></tr>`;
       return;
     }
     body.innerHTML = judges.map((j) => `

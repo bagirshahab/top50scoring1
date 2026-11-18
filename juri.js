@@ -117,11 +117,11 @@ function hostOf(url) {
 function workBadges(w) {
   const b = [];
   if (w.team_number) b.push(`<span class="bdg bdg-team">Team ${w.team_number}</span>`);
-  if (w.bedrock_used === true) b.push('<span class="bdg bdg-yes">Bedrock ✓</span>');
-  if (w.bedrock_used === false) b.push('<span class="bdg bdg-no">Bedrock ✗</span>');
-  if (w.agentcore_used === true) b.push('<span class="bdg bdg-yes">AgentCore ✓</span>');
-  if (w.agentcore_used === false) b.push('<span class="bdg bdg-no">AgentCore ✗</span>');
-  if (w.fallback) b.push('<span class="bdg bdg-warn">⚠ Link unavailable</span>');
+  if (w.bedrock_used === true) b.push(`<span class="bdg bdg-yes">${icon("status-positive")} Bedrock</span>`);
+  if (w.bedrock_used === false) b.push(`<span class="bdg bdg-no">${icon("status-negative")} Bedrock</span>`);
+  if (w.agentcore_used === true) b.push(`<span class="bdg bdg-yes">${icon("status-positive")} AgentCore</span>`);
+  if (w.agentcore_used === false) b.push(`<span class="bdg bdg-no">${icon("status-negative")} AgentCore</span>`);
+  if (w.fallback) b.push(`<span class="bdg bdg-warn">${icon("status-warning")} Link unavailable</span>`);
   return b.join("");
 }
 
@@ -140,8 +140,8 @@ function youtubeEmbed(url) {
 }
 
 function statusHtml(w) {
-  if (loadDraft(w.id)) return '<span class="chip pending">⚠ Unsaved draft</span>';
-  if (SCORES.has(w.id)) return `<span class="chip done">✓ ${Number(SCORES.get(w.id)).toFixed(2)}</span>`;
+  if (loadDraft(w.id)) return `<span class="chip pending">${icon("status-warning")} Unsaved draft</span>`;
+  if (SCORES.has(w.id)) return `<span class="chip done">${icon("status-positive")} ${Number(SCORES.get(w.id)).toFixed(2)}</span>`;
   return '<span class="chip">Not scored</span>';
 }
 
@@ -160,7 +160,7 @@ function renderList() {
   const list = document.getElementById("work-list");
   updateStats();
   if (!WORKS.length) {
-    list.innerHTML = `<div class="empty"><div class="empty-ic">📭</div>No projects yet. Please wait for the admin to add them.</div>`;
+    list.innerHTML = `<div class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet. Please wait for the admin to add them.</div>`;
     return;
   }
   list.innerHTML = WORKS.map((w, i) => `
@@ -174,7 +174,7 @@ function renderList() {
       </span>
       <span class="wr-side">
         <span class="wr-status">${statusHtml(w)}</span>
-        <span class="wr-cta">${SCORES.has(w.id) ? "Edit" : "Score"} ›</span>
+        <span class="wr-cta">${SCORES.has(w.id) ? "Edit" : "Score"} ${icon("angle-right")}</span>
       </span>
     </button>`).join("");
 }
@@ -185,7 +185,7 @@ function refreshRow(workId) {
   if (w && row) {
     row.classList.toggle("is-done", SCORES.has(w.id));
     row.querySelector(".wr-status").innerHTML = statusHtml(w);
-    row.querySelector(".wr-cta").textContent = (SCORES.has(w.id) ? "Edit" : "Score") + " ›";
+    row.querySelector(".wr-cta").innerHTML = (SCORES.has(w.id) ? "Edit" : "Score") + " " + icon("angle-right");
   }
   updateStats();
 }
@@ -277,7 +277,7 @@ async function openScore(workId) {
     if (data.score) {
       CRITERIA.forEach((p) => setParamValue(p.key, data.score[p.key]));
       document.getElementById("score-comment").value = data.score.comment || "";
-      document.getElementById("score-status").innerHTML = '<span class="chip done">✓ Previously scored. You can edit.</span>';
+      document.getElementById("score-status").innerHTML = `<span class="chip done">${icon("status-positive")} Previously scored. You can edit.</span>`;
     } else {
       document.getElementById("score-status").innerHTML = '<span class="chip">Not scored yet</span>';
     }
@@ -291,7 +291,7 @@ async function openScore(workId) {
     });
     document.getElementById("score-comment").value = draft.payload.comment || "";
     document.getElementById("score-status").innerHTML =
-      '<span class="chip pending">⚠ Unsaved scores restored. Press Submit to save.</span>';
+      `<span class="chip pending">${icon("status-warning")} Unsaved scores restored. Press Submit to save.</span>`;
   }
   recalcTotal();
 }

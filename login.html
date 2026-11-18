@@ -7,6 +7,8 @@
   <title>Login — AI For All Demo Day Judging</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="icons.js"></script>
+  <script src="theme.js"></script>
 </head>
 
 <body>
@@ -20,16 +22,16 @@
 
       <!-- Notice shown while judging is outside its window -->
       <div id="pre-open-notice" class="pre-open-notice" hidden>
-        ⏳ Judging has not opened yet. Judge sign-in will unlock when judging opens.
+        <i data-icon="status-in-progress"></i> Judging has not opened yet. Judge sign-in will unlock when judging opens.
       </div>
       <div id="closed-notice" class="pre-open-notice closed" hidden>
-        🔒 Judging has closed. Judge sign-in is no longer available.
+        <i data-icon="lock-private"></i> Judging has closed. Judge sign-in is no longer available.
       </div>
 
       <!-- Role selection -->
       <div class="role-switch" role="tablist">
-        <button type="button" id="role-judge" class="active" onclick="setRole('judge')">👨‍⚖️ Judge</button>
-        <button type="button" id="role-admin" onclick="setRole('admin')">🛠️ Admin</button>
+        <button type="button" id="role-judge" class="active" onclick="setRole('judge')"><i data-icon="user-profile"></i> Judge</button>
+        <button type="button" id="role-admin" onclick="setRole('admin')"><i data-icon="settings"></i> Admin</button>
       </div>
 
       <form id="login-form" novalidate>
@@ -97,7 +99,7 @@
         const judgeBtn = document.getElementById('role-judge');
         judgeBtn.classList.remove('active');
         judgeBtn.classList.add('locked');
-        judgeBtn.innerHTML = '🔒 Judge';
+        judgeBtn.innerHTML = icon('lock-private') + ' Judge';
         document.getElementById('role-admin').classList.add('active');
       }
     })();

@@ -7,12 +7,14 @@
   <title>Admin Dashboard — AI For All Demo Day</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="icons.js"></script>
+  <script src="theme.js"></script>
 </head>
 
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="logo-mark">⚖️</span>
+      <span class="logo-mark"><i data-icon="gen-ai"></i></span>
       <span class="brand-text"><b>AI FOR ALL</b> Demo Day<span class="brand-sub">ADMIN DASHBOARD</span></span>
     </div>
     <div class="topbar-right">
@@ -37,9 +39,9 @@
     </section>
 
     <div class="tabs" role="tablist">
-      <button class="tab active" data-tab="ranking" onclick="switchTab('ranking')">🏆 Ranking</button>
-      <button class="tab" data-tab="works" onclick="switchTab('works')">📋 Projects &amp; Order</button>
-      <button class="tab" data-tab="judges" onclick="switchTab('judges')">👨‍⚖️ Judges</button>
+      <button class="tab active" data-tab="ranking" onclick="switchTab('ranking')"><i data-icon="bar-chart"></i> Ranking</button>
+      <button class="tab" data-tab="works" onclick="switchTab('works')"><i data-icon="list-view"></i> Projects &amp; Order</button>
+      <button class="tab" data-tab="judges" onclick="switchTab('judges')"><i data-icon="group"></i> Judges</button>
     </div>
 
     <!-- ========== RANKING ========== -->
@@ -47,12 +49,12 @@
       <div class="card">
         <div class="card-top">
           <div>
-            <h2>🏆 Live Ranking</h2>
+            <h2>Live Ranking</h2>
             <p class="card-desc">Average weighted score (0–100) across judges. The top 5 advance. Tap a row for the per-judge breakdown.</p>
           </div>
           <div class="card-actions">
-            <button class="btn btn-ghost btn-sm" onclick="loadRanking()">↻ Refresh</button>
-            <a href="/leaderboard" target="_blank" class="btn btn-cyan btn-sm">🌐 Public Leaderboard</a>
+            <button class="btn btn-ghost btn-sm" onclick="loadRanking()"><i data-icon="refresh"></i> Refresh</button>
+            <a href="/leaderboard" target="_blank" class="btn btn-cyan btn-sm"><i data-icon="globe"></i> Public Leaderboard</a>
           </div>
         </div>
         <div class="table-wrap">
@@ -78,7 +80,7 @@
     <section id="tab-works" hidden>
       <div class="grid grid-2 grid-works">
         <div class="card card-accent">
-          <h2 id="work-form-title">➕ Add Project</h2>
+          <h2 id="work-form-title">Add Project</h2>
           <p class="card-desc">Paste the live link of the team's prototype. New projects go to the end of the order.</p>
           <form id="work-form">
             <div class="field">
@@ -142,12 +144,12 @@
         <div class="card">
           <div class="card-top">
             <div>
-              <h2>📋 Presentation Order</h2>
-              <p class="card-desc">Judges see projects in this order. Use ▲ ▼ or pick a number.</p>
+              <h2>Presentation Order</h2>
+              <p class="card-desc">Judges see projects in this order. Use the arrow buttons or pick a number.</p>
             </div>
             <div class="card-actions">
               <span class="chip" id="works-count">0 / 20</span>
-              <button class="btn btn-cyan btn-sm" id="check-all-btn" onclick="checkLinks()">🔍 Check links</button>
+              <button class="btn btn-cyan btn-sm" id="check-all-btn" onclick="checkLinks()"><i data-icon="search"></i> Check links</button>
             </div>
           </div>
           <div id="check-summary" class="check-summary" hidden></div>
@@ -161,7 +163,7 @@
       <div class="card import-card">
         <div class="card-top">
           <div>
-            <h2>📥 Import from submission form</h2>
+            <h2>Import from submission form</h2>
             <p class="card-desc">Upload the CSV or JSON exported from the Top 20 form. Teams are matched by team number. If a team submitted more than once, the latest submission is used. Existing projects keep their order, scores, screenshot and fallback flag.</p>
           </div>
         </div>
@@ -183,7 +185,7 @@
     <section id="tab-judges" hidden>
       <div class="grid grid-2">
         <div class="card card-accent-cyan">
-          <h2>➕ Create Judge Account</h2>
+          <h2>Create Judge Account</h2>
           <p class="card-desc">Judges sign in with this username and password. Share the credentials with each judge.</p>
           <form id="judge-form">
             <div class="field">
@@ -205,7 +207,7 @@
         </div>
 
         <div class="card">
-          <h2>👨‍⚖️ Judges</h2>
+          <h2>Judges</h2>
           <p class="card-desc">Registered judges and how many projects each has scored.</p>
           <div class="table-wrap">
             <table>
@@ -228,7 +230,7 @@
     <div class="modal-card modal-narrow">
       <div class="modal-head">
         <h3 id="detail-title">Score Breakdown</h3>
-        <button class="modal-close" onclick="closeDetail()" aria-label="Close">&times;</button>
+        <button class="modal-close" onclick="closeDetail()" aria-label="Close"><i data-icon="close"></i></button>
       </div>
       <div class="modal-body">
         <div class="table-wrap">
