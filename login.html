@@ -41,8 +41,15 @@
         </div>
         <div class="field">
           <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="enter your password" autocomplete="current-password" required />
+          <div class="pw-wrap">
+            <input type="password" id="password" name="password" placeholder="enter your password" autocomplete="current-password" required />
+            <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i data-icon="eye"></i></button>
+          </div>
         </div>
+        <label class="check-row remember-row">
+          <input type="checkbox" id="remember" checked />
+          <span>Remember my login on this browser</span>
+        </label>
 
         <button type="submit" class="btn btn-primary btn-block" id="login-btn">
           <span id="login-btn-text">Sign In</span>
@@ -104,6 +111,34 @@
       }
     })();
 
+    // ---- Show / hide password ----
+    (function passwordToggle() {
+      const input = document.getElementById('password');
+      const btn = document.getElementById('pw-toggle');
+      btn.addEventListener('click', () => {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.innerHTML = icon(show ? 'eye-off' : 'eye');
+        btn.setAttribute('aria-pressed', String(show));
+        btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        btn.setAttribute('title', show ? 'Hide password' : 'Show password');
+        input.focus();
+      });
+    })();
+
+    // ---- Remember my login: pre-fill the username and role used last time (never the password) ----
+    const REMEMBER_KEY = 'pj_remember';
+    (function restoreRemembered() {
+      try {
+        const rem = JSON.parse(localStorage.getItem(REMEMBER_KEY) || 'null');
+        if (!rem) return;
+        document.getElementById('remember').checked = true;
+        if (rem.username) document.getElementById('username').value = rem.username;
+        if (rem.role === 'admin' || (rem.role === 'judge' && JUDGING_OPEN)) setRole(rem.role);
+        if (rem.username) document.getElementById('password').focus();
+      } catch { /* ignore corrupt value */ }
+    })();
+
     // If already logged in, redirect to the matching dashboard
     (function redirectIfLoggedIn() {
       const sess = Auth.get();
@@ -138,7 +173,12 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Login failed.');
 
-        Auth.set(data.token, data.user);
+        const remember = document.getElementById('remember').checked;
+        try {
+          if (remember) localStorage.setItem(REMEMBER_KEY, JSON.stringify({ username, role: data.user.role }));
+          else localStorage.removeItem(REMEMBER_KEY);
+        } catch { /* storage blocked */ }
+        Auth.set(data.token, data.user, remember);
         location.href = data.user.role === 'admin' ? '/admin' : '/juri';
       } catch (err) {
         msg.textContent = err.message;

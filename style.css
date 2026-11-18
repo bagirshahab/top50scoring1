@@ -721,3 +721,17 @@ input[type="text"], input[type="password"], input[type="number"], textarea, sele
 .chip { display: inline-flex; }
 .sheet-back .ico, .btn .ico { margin-top: 0; }
 .stat-label .ico { margin-right: 4px; }
+
+/* ===== Login: show password + remember me ===== */
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 52px; }
+.pw-toggle {
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 42px; height: 42px; display: grid; place-items: center; border: none; border-radius: 10px;
+  background: transparent; color: var(--muted); cursor: pointer;
+}
+.pw-toggle:hover { color: var(--text); background: rgba(var(--hover), 0.06); }
+.pw-toggle:focus-visible { outline: 3px solid var(--cyan); outline-offset: 0; }
+.pw-toggle .ico { width: 20px; height: 20px; }
+.remember-row { margin: -2px 0 18px; align-items: center; font-size: 14px; color: var(--text); user-select: none; }
+.remember-row span { color: var(--text); }

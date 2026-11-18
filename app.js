@@ -10,16 +10,19 @@ function API(path) { return API_BASE + path; }
 // ---- Session management (token + user) via localStorage ----
 const Auth = {
   KEY: "pj_session",
-  set(token, user) {
-    localStorage.setItem(this.KEY, JSON.stringify({ token, user }));
+  // remember=true  -> kept in this browser (localStorage)
+  // remember=false -> forgotten when the tab/browser is closed (sessionStorage)
+  set(token, user, remember = true) {
+    this.clear();
+    (remember ? localStorage : sessionStorage).setItem(this.KEY, JSON.stringify({ token, user }));
   },
   get() {
-    try { return JSON.parse(localStorage.getItem(this.KEY) || "null"); }
+    try { return JSON.parse(sessionStorage.getItem(this.KEY) || localStorage.getItem(this.KEY) || "null"); }
     catch { return null; }
   },
   token() { return this.get()?.token || null; },
   user() { return this.get()?.user || null; },
-  clear() { localStorage.removeItem(this.KEY); },
+  clear() { localStorage.removeItem(this.KEY); sessionStorage.removeItem(this.KEY); },
   logout() { this.clear(); location.href = "/login"; },
 };
 
