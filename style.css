@@ -541,10 +541,12 @@ input[type="text"], input[type="password"], input[type="number"], textarea, sele
   .sheet-body .pane-score[hidden] { display: block !important; }
 }
 
-/* Wordmark (login + landing): red -> cyan gradient text on the dark background */
+/* Wordmark (login + landing): red -> cyan gradient text. Wraps instead of clipping on narrow screens. */
 .logo-wordmark {
-  display: inline-block; font-size: clamp(24px, 6vw, 34px); font-weight: 800; letter-spacing: 1px; line-height: 1.1;
-  text-transform: uppercase; white-space: nowrap;
+  display: block; max-width: 100%; margin: 0 auto; text-align: center; text-wrap: balance;
+  font-size: clamp(19px, 5.2vw, 30px); font-weight: 800; letter-spacing: 0.5px; line-height: 1.2;
+  text-transform: uppercase; overflow-wrap: break-word;
   background: linear-gradient(90deg, var(--red) 0%, #9a6a78 50%, var(--cyan) 100%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
 }
+.login-card .logo-wordmark { font-size: clamp(18px, 5.4vw, 22px); letter-spacing: 0.3px; }
