@@ -93,11 +93,44 @@
               <label for="w-category">Theme <span class="opt">(optional)</span></label>
               <input type="text" id="w-category" placeholder="e.g. Agriculture & Food" />
             </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="w-number">Team no.</label>
+                <input type="number" id="w-number" min="1" max="99" inputmode="numeric" placeholder="1-99" />
+              </div>
+              <div class="field">
+                <label for="w-bedrock">Bedrock used</label>
+                <select id="w-bedrock"><option value="">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select>
+              </div>
+              <div class="field">
+                <label for="w-agentcore">AgentCore</label>
+                <select id="w-agentcore"><option value="">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select>
+              </div>
+            </div>
             <div class="field">
               <label for="w-url">Project link <span class="req">*</span></label>
-              <input type="text" id="w-url" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="https://team-project.vercel.app" required />
+              <input type="text" id="w-url" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="https://dxxxxxxxx.cloudfront.net" required />
               <p class="hint">Must be a public web link. https:// is added automatically if missing.</p>
             </div>
+            <details class="more-fields" id="w-more">
+              <summary>Backup material &amp; extra links (optional)</summary>
+              <div class="field">
+                <label for="w-video">Video link</label>
+                <input type="text" id="w-video" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="https://youtu.be/..." />
+              </div>
+              <div class="field">
+                <label for="w-shot">Screenshot link</label>
+                <input type="text" id="w-shot" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="https://.../screenshot.png" />
+              </div>
+              <div class="field">
+                <label for="w-repo">Repository link</label>
+                <input type="text" id="w-repo" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="https://github.com/team/repo" />
+              </div>
+              <label class="check-row">
+                <input type="checkbox" id="w-fallback" />
+                <span><b>Mark as fallback</b> — the website could not be published. Judges see "Link unavailable" and the video / screenshot instead. The team is still scored normally.</span>
+              </label>
+            </details>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary btn-block" id="work-submit">Save Project</button>
               <button type="button" class="btn btn-ghost" id="work-cancel" hidden onclick="resetWorkForm()">Cancel</button>
@@ -112,12 +145,37 @@
               <h2>📋 Presentation Order</h2>
               <p class="card-desc">Judges see projects in this order. Use ▲ ▼ or pick a number.</p>
             </div>
-            <span class="chip" id="works-count">0 / 20</span>
+            <div class="card-actions">
+              <span class="chip" id="works-count">0 / 20</span>
+              <button class="btn btn-cyan btn-sm" id="check-all-btn" onclick="checkLinks()">🔍 Check links</button>
+            </div>
           </div>
+          <div id="check-summary" class="check-summary" hidden></div>
           <div id="works-list" class="order-list">
             <div class="empty">Loading...</div>
           </div>
         </div>
+      </div>
+
+      <!-- Import from the submission form -->
+      <div class="card import-card">
+        <div class="card-top">
+          <div>
+            <h2>📥 Import from submission form</h2>
+            <p class="card-desc">Upload the CSV or JSON exported from the Top 20 form. Teams are matched by team number. If a team submitted more than once, the latest submission is used. Existing projects keep their order, scores, screenshot and fallback flag.</p>
+          </div>
+        </div>
+        <div class="import-controls">
+          <input type="file" id="imp-file" accept=".csv,.json,text/csv,application/json" />
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('imp-text').hidden = !document.getElementById('imp-text').hidden">or paste text</button>
+        </div>
+        <textarea id="imp-text" hidden placeholder="Paste CSV (with a header row) or JSON array here" style="min-height:120px;font-family:ui-monospace,monospace;font-size:12.5px;margin-top:10px"></textarea>
+        <p class="hint">Columns used: team_number, team_name, project_title, website_url, repo_url, video_url, bedrock_used, agentcore_used, and optionally submitted_at / category.</p>
+        <div class="form-actions" style="margin-top:12px">
+          <button class="btn btn-primary" id="imp-preview" onclick="runImport(true)">Preview</button>
+          <button class="btn btn-cyan" id="imp-apply" onclick="runImport(false)" disabled>Apply import</button>
+        </div>
+        <div id="imp-result" class="imp-result"></div>
       </div>
     </section>
 

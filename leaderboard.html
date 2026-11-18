@@ -151,7 +151,7 @@
           <tr class="${rank <= TOP_N && hasScore ? "in-top" : ""}">
             <td><span class="rank-badge ${rankCls}">${rank}</span></td>
             <td>
-              <div class="cell-title">${esc(r.project_title)}</div>
+              <div class="cell-title">${r.team_number ? `<span class="team-no">T${r.team_number}</span> ` : ""}${esc(r.project_title)}</div>
               <div class="cell-sub">${esc(r.team_name)}${r.category ? " · " + esc(r.category) : ""}</div>
             </td>
             <td>${hasScore ? `<span class="chip done">${r.judge_count}</span>` : `<span class="chip pending">—</span>`}</td>

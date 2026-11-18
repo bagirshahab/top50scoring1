@@ -24,10 +24,24 @@ CREATE TABLE IF NOT EXISTS pjt_works (
     category      TEXT,
     project_url   TEXT,                            -- live web link of the prototype
     position      INTEGER,                         -- presentation order 1..20
+    -- Submission form data
+    team_number     INTEGER,                       -- 1..99, unique when set
+    bedrock_used    BOOLEAN,
+    agentcore_used  BOOLEAN,
+    repo_url        TEXT,
+    video_url       TEXT,                          -- backup material (fallback)
+    screenshot_url  TEXT,
+    fallback        BOOLEAN NOT NULL DEFAULT FALSE, -- link unavailable: show video/screenshot, still scored
+    -- Link check result (admin: Check links)
+    link_ok         BOOLEAN,
+    link_status     INTEGER,
+    link_note       TEXT,
+    link_checked_at TIMESTAMPTZ,
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_pjt_works_position ON pjt_works (position);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pjt_works_team_number ON pjt_works (team_number) WHERE team_number IS NOT NULL;
 
 -- ---------------------------------------------------------------------
 -- 2. JUDGES (created by the admin, bcrypt password hash)
@@ -98,4 +112,14 @@ CREATE TABLE IF NOT EXISTS pjt_admins (
 --                           ADD COLUMN IF NOT EXISTS pitch INTEGER NOT NULL DEFAULT 1;
 --    ALTER TABLE pjt_scores ALTER COLUMN prototype DROP DEFAULT,
 --                           ALTER COLUMN pitch DROP DEFAULT;
+-- =====================================================================
+
+-- =====================================================================
+--  MIGRATION v2 (Demo Day links -> submission form fields). Additive, safe to re-run.
+--    ALTER TABLE pjt_works ADD COLUMN IF NOT EXISTS team_number INTEGER, ADD COLUMN IF NOT EXISTS bedrock_used BOOLEAN,
+--      ADD COLUMN IF NOT EXISTS agentcore_used BOOLEAN, ADD COLUMN IF NOT EXISTS repo_url TEXT, ADD COLUMN IF NOT EXISTS video_url TEXT,
+--      ADD COLUMN IF NOT EXISTS screenshot_url TEXT, ADD COLUMN IF NOT EXISTS fallback BOOLEAN NOT NULL DEFAULT FALSE,
+--      ADD COLUMN IF NOT EXISTS link_ok BOOLEAN, ADD COLUMN IF NOT EXISTS link_status INTEGER, ADD COLUMN IF NOT EXISTS link_note TEXT,
+--      ADD COLUMN IF NOT EXISTS link_checked_at TIMESTAMPTZ;
+--    CREATE UNIQUE INDEX IF NOT EXISTS uq_pjt_works_team_number ON pjt_works (team_number) WHERE team_number IS NOT NULL;
 -- =====================================================================

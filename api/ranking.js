@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     // Per-project aggregate
     const ranking = await sql`
       SELECT
-        w.id, w.code, w.team_name, w.project_title, w.category, w.position,
+        w.id, w.code, w.team_name, w.project_title, w.category, w.position, w.team_number, w.fallback,
         COUNT(s.id)                                        AS judge_count,
         COALESCE(ROUND(AVG(s.weighted)::numeric, 2), 0)    AS avg_weighted,
         COALESCE(ROUND(AVG(s.prototype)::numeric, 1), 0)   AS avg_prototype,

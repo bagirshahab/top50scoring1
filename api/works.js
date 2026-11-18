@@ -3,29 +3,21 @@
 //
 //  GET    /api/works              -> project list in presentation order (admin & judge)
 //  POST   /api/works              -> add a project (ADMIN)
-//                                    body: { team_name, project_title, category, project_url }
 //  PUT    /api/works              -> (ADMIN)
-//                                    body { order: [id, id, ...] }  -> set presentation order 1..N
-//                                    body { id, team_name, project_title, category, project_url } -> edit
+//                                    body { order: [id, ...] }   -> set presentation order 1..N
+//                                    body { id, ...fields }      -> edit one project
 //  DELETE /api/works?id=<uuid>    -> delete a project (ADMIN); remaining ones are renumbered
+//
+//  Fields: team_name, project_title, category, project_url (required),
+//          team_number, bedrock_used, agentcore_used, repo_url, video_url,
+//          screenshot_url, fallback (flag: link unavailable, show backup material).
+//  Judges never see the internal link-check note.
 // =====================================================================
 import { sql, setCors, parseBody, verifyToken, requireRole, nextWorkCode } from "./_lib.js";
+import { MAX_WORKS, readWorkFields } from "./_works-util.js";
 
-const MAX_WORKS = 20;
-
-// Accept only absolute http(s) links. Returns the normalised URL or null.
-function cleanUrl(raw) {
-  let s = (raw || "").toString().trim();
-  if (!s || s.length > 2000) return null;
-  if (!/^https?:\/\//i.test(s)) s = "https://" + s;
-  try {
-    const u = new URL(s);
-    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
-    if (!u.hostname.includes(".")) return null;
-    return u.toString();
-  } catch {
-    return null;
-  }
+function dupMessage(err) {
+  return err && err.code === "23505" ? "That team number is already used by another project." : null;
 }
 
 export default async function handler(req, res) {
@@ -39,10 +31,15 @@ export default async function handler(req, res) {
       if (!user) return res.status(401).json({ error: "Not signed in." });
 
       const rows = await sql`
-        SELECT id, code, team_name, project_title, category, project_url, position, created_at
+        SELECT id, code, team_name, project_title, category, project_url, position, created_at,
+               team_number, bedrock_used, agentcore_used, repo_url, video_url, screenshot_url, fallback,
+               link_ok, link_status, link_note, link_checked_at
         FROM pjt_works
         ORDER BY position NULLS LAST, created_at, code
       `;
+      if (user.role !== "admin") {
+        for (const r of rows) { delete r.link_note; delete r.link_status; delete r.link_ok; delete r.link_checked_at; }
+      }
       return res.status(200).json({ works: rows, max: MAX_WORKS });
     }
 
@@ -51,14 +48,9 @@ export default async function handler(req, res) {
       const admin = requireRole(req, res, "admin");
       if (!admin) return;
 
-      const { team_name, project_title, category, project_url } = parseBody(req);
-      const team = (team_name || "").trim();
-      const title = (project_title || "").trim();
-      const cat = (category || "").trim();
-      const url = cleanUrl(project_url);
-
-      if (!team || !title) return res.status(400).json({ error: "Team name and project title are required." });
-      if (!url) return res.status(400).json({ error: "Please enter a valid project link (https://...)." });
+      const parsed = readWorkFields(parseBody(req));
+      if (parsed.error) return res.status(400).json({ error: parsed.error });
+      const v = parsed.value;
 
       const count = (await sql`SELECT COUNT(*)::int AS c FROM pjt_works`)[0].c;
       if (count >= MAX_WORKS) {
@@ -66,13 +58,22 @@ export default async function handler(req, res) {
       }
 
       const code = await nextWorkCode();
-      const rows = await sql`
-        INSERT INTO pjt_works (code, team_name, project_title, category, project_url, position)
-        VALUES (${code}, ${team}, ${title}, ${cat || null}, ${url},
-                (SELECT COALESCE(MAX(position), 0) + 1 FROM pjt_works))
-        RETURNING id, code, team_name, project_title, category, project_url, position, created_at
-      `;
-      return res.status(200).json({ success: true, work: rows[0] });
+      try {
+        const rows = await sql`
+          INSERT INTO pjt_works
+            (code, team_name, project_title, category, project_url, position,
+             team_number, bedrock_used, agentcore_used, repo_url, video_url, screenshot_url, fallback)
+          VALUES (${code}, ${v.team_name}, ${v.project_title}, ${v.category}, ${v.project_url},
+                  (SELECT COALESCE(MAX(position), 0) + 1 FROM pjt_works),
+                  ${v.team_number}, ${v.bedrock_used}, ${v.agentcore_used}, ${v.repo_url}, ${v.video_url}, ${v.screenshot_url}, ${v.fallback})
+          RETURNING id, code, position
+        `;
+        return res.status(200).json({ success: true, work: rows[0] });
+      } catch (err) {
+        const m = dupMessage(err);
+        if (m) return res.status(409).json({ error: m });
+        throw err;
+      }
     }
 
     // -------- PUT: reorder or edit --------
@@ -82,7 +83,6 @@ export default async function handler(req, res) {
 
       const body = parseBody(req);
 
-      // Reorder: the full list of ids in the desired order
       if (Array.isArray(body.order)) {
         const ids = body.order.map(String);
         const existing = await sql`SELECT id FROM pjt_works`;
@@ -98,23 +98,33 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
       }
 
-      // Edit one project
       if (!body.id) return res.status(400).json({ error: "Project ID is required." });
-      const team = (body.team_name || "").trim();
-      const title = (body.project_title || "").trim();
-      const cat = (body.category || "").trim();
-      const url = cleanUrl(body.project_url);
-      if (!team || !title) return res.status(400).json({ error: "Team name and project title are required." });
-      if (!url) return res.status(400).json({ error: "Please enter a valid project link (https://...)." });
+      const parsed = readWorkFields(body);
+      if (parsed.error) return res.status(400).json({ error: parsed.error });
+      const v = parsed.value;
 
-      const rows = await sql`
-        UPDATE pjt_works
-        SET team_name = ${team}, project_title = ${title}, category = ${cat || null}, project_url = ${url}
-        WHERE id = ${body.id}
-        RETURNING id
-      `;
-      if (!rows[0]) return res.status(404).json({ error: "Project not found." });
-      return res.status(200).json({ success: true });
+      try {
+        // When the project link changes, the old link-check result no longer applies.
+        const rows = await sql`
+          UPDATE pjt_works SET
+            team_name = ${v.team_name}, project_title = ${v.project_title}, category = ${v.category},
+            link_ok         = CASE WHEN project_url IS DISTINCT FROM ${v.project_url} THEN NULL ELSE link_ok END,
+            link_status     = CASE WHEN project_url IS DISTINCT FROM ${v.project_url} THEN NULL ELSE link_status END,
+            link_note       = CASE WHEN project_url IS DISTINCT FROM ${v.project_url} THEN NULL ELSE link_note END,
+            link_checked_at = CASE WHEN project_url IS DISTINCT FROM ${v.project_url} THEN NULL ELSE link_checked_at END,
+            project_url = ${v.project_url},
+            team_number = ${v.team_number}, bedrock_used = ${v.bedrock_used}, agentcore_used = ${v.agentcore_used},
+            repo_url = ${v.repo_url}, video_url = ${v.video_url}, screenshot_url = ${v.screenshot_url}, fallback = ${v.fallback}
+          WHERE id = ${body.id}
+          RETURNING id
+        `;
+        if (!rows[0]) return res.status(404).json({ error: "Project not found." });
+        return res.status(200).json({ success: true });
+      } catch (err) {
+        const m = dupMessage(err);
+        if (m) return res.status(409).json({ error: m });
+        throw err;
+      }
     }
 
     // -------- DELETE --------
@@ -126,7 +136,6 @@ export default async function handler(req, res) {
       if (!id) return res.status(400).json({ error: "Project ID is required." });
 
       await sql`DELETE FROM pjt_works WHERE id = ${id}`;
-      // Close the gap so positions stay 1..N
       await sql`
         UPDATE pjt_works w SET position = t.pos
         FROM (SELECT id, ROW_NUMBER() OVER (ORDER BY position NULLS LAST, created_at, code) AS pos FROM pjt_works) t

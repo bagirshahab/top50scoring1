@@ -114,6 +114,31 @@ function hostOf(url) {
   try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return ""; }
 }
 
+function workBadges(w) {
+  const b = [];
+  if (w.team_number) b.push(`<span class="bdg bdg-team">Team ${w.team_number}</span>`);
+  if (w.bedrock_used === true) b.push('<span class="bdg bdg-yes">Bedrock ✓</span>');
+  if (w.bedrock_used === false) b.push('<span class="bdg bdg-no">Bedrock ✗</span>');
+  if (w.agentcore_used === true) b.push('<span class="bdg bdg-yes">AgentCore ✓</span>');
+  if (w.agentcore_used === false) b.push('<span class="bdg bdg-no">AgentCore ✗</span>');
+  if (w.fallback) b.push('<span class="bdg bdg-warn">⚠ Link unavailable</span>');
+  return b.join("");
+}
+
+// YouTube / youtu.be links can be played inside the page. Anything else opens in a new tab.
+function youtubeEmbed(url) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    let id = null;
+    if (host === "youtu.be") id = u.pathname.slice(1);
+    else if (host === "youtube.com" || host === "m.youtube.com") {
+      id = u.pathname === "/watch" ? u.searchParams.get("v") : (u.pathname.match(/^\/(?:embed|shorts)\/([\w-]{6,})/) || [])[1];
+    }
+    return id && /^[\w-]{6,}$/.test(id) ? "https://www.youtube.com/embed/" + id : null;
+  } catch { return null; }
+}
+
 function statusHtml(w) {
   if (loadDraft(w.id)) return '<span class="chip pending">⚠ Unsaved draft</span>';
   if (SCORES.has(w.id)) return `<span class="chip done">✓ ${Number(SCORES.get(w.id)).toFixed(2)}</span>`;
@@ -144,6 +169,7 @@ function renderList() {
       <span class="wr-main">
         <span class="wr-title">${esc(w.project_title)}</span>
         <span class="wr-team">${esc(w.team_name)}${w.category ? " · " + esc(w.category) : ""}</span>
+        <span class="bdg-row">${workBadges(w)}</span>
         <span class="wr-host">${esc(hostOf(w.project_url))}</span>
       </span>
       <span class="wr-side">
@@ -173,9 +199,39 @@ function setPane(name) {
   if (!wide && name === "project") ensureFrame();
 }
 
+// Fallback project: the website could not be published, so show the video / screenshot instead.
+function applyFallback(work) {
+  const box = document.getElementById("proj-fallback");
+  const f = document.getElementById("score-frame");
+  const on = !!work.fallback;
+  box.hidden = !on;
+  f.hidden = on;
+  document.getElementById("proj-note").hidden = on;
+  const frame = document.getElementById("pf-video-frame");
+  frame.src = "about:blank";
+  if (!on) return;
+
+  const emb = work.video_url ? youtubeEmbed(work.video_url) : null;
+  document.getElementById("pf-video-embed").hidden = !emb;
+  if (emb) frame.src = emb;
+  const vid = document.getElementById("pf-video");
+  vid.hidden = !work.video_url;
+  if (work.video_url) vid.href = work.video_url;
+  const shotLink = document.getElementById("pf-shot-link");
+  shotLink.hidden = !work.screenshot_url;
+  if (work.screenshot_url) {
+    shotLink.href = work.screenshot_url;
+    document.getElementById("pf-shot").src = work.screenshot_url;
+  } else {
+    document.getElementById("pf-shot").removeAttribute("src");
+  }
+  document.getElementById("pf-empty").hidden = !!(work.video_url || work.screenshot_url);
+}
+
 function ensureFrame() {
   const work = WORKS.find((w) => w.id === currentWorkId);
   const f = document.getElementById("score-frame");
+  if (work && work.fallback) return;
   if (work && f.dataset.for !== work.id) {
     f.dataset.for = work.id;
     f.src = work.project_url;
@@ -195,6 +251,8 @@ async function openScore(workId) {
   document.getElementById("score-title").textContent = work.project_title;
   document.getElementById("score-team").textContent = work.team_name + (work.category ? " · " + work.category : "");
   document.getElementById("score-url").textContent = work.project_url;
+  document.getElementById("score-badges").innerHTML = workBadges(work);
+  applyFallback(work);
   document.getElementById("score-open").href = work.project_url;
   const f = document.getElementById("score-frame");
   f.dataset.for = ""; f.src = "about:blank";
@@ -243,6 +301,7 @@ function closeScore() {
   document.body.classList.remove("no-scroll");
   const f = document.getElementById("score-frame");
   f.dataset.for = ""; f.src = "about:blank";
+  document.getElementById("pf-video-frame").src = "about:blank";
   currentWorkId = null;
 }
 

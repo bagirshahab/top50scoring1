@@ -55,6 +55,7 @@
         <div>
           <div class="sheet-name" id="score-title">Project</div>
           <div class="sheet-team" id="score-team"></div>
+          <div class="bdg-row" id="score-badges"></div>
         </div>
       </div>
       <div class="sheet-total">
@@ -75,10 +76,18 @@
           <span class="proj-url" id="score-url"></span>
           <a class="btn btn-cyan btn-sm" id="score-open" href="#" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a>
         </div>
-        <div class="proj-frame">
+        <div class="proj-frame" id="proj-frame-box">
+          <div class="proj-fallback" id="proj-fallback" hidden>
+            <div class="pf-title">⚠ Link unavailable</div>
+            <p>This team's website could not be opened. Please use the backup material below. The project is still scored normally.</p>
+            <div id="pf-video-embed" class="pf-embed" hidden><iframe id="pf-video-frame" title="Video" allowfullscreen referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe></div>
+            <a id="pf-video" class="btn btn-cyan" href="#" target="_blank" rel="noopener noreferrer" hidden>▶ Watch video ↗</a>
+            <a id="pf-shot-link" href="#" target="_blank" rel="noopener noreferrer" hidden><img id="pf-shot" alt="Screenshot of the project" /></a>
+            <p class="pf-empty" id="pf-empty" hidden>No video or screenshot was provided for this project.</p>
+          </div>
           <iframe id="score-frame" title="Project" referrerpolicy="no-referrer"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
-          <div class="proj-note">If the page stays blank, the site does not allow embedding. Use <b>Open in new tab</b>.</div>
+          <div class="proj-note" id="proj-note">If the page stays blank, the site does not allow embedding. Use <b>Open in new tab</b>.</div>
         </div>
       </section>
 

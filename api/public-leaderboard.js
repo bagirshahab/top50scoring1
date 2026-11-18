@@ -41,7 +41,7 @@ export default async function handler(req, res) {
   try {
     const ranking = await sql`
       SELECT
-        w.code, w.team_name, w.project_title, w.category,
+        w.code, w.team_name, w.project_title, w.category, w.team_number,
         COUNT(s.id)                                     AS judge_count,
         COALESCE(ROUND(AVG(s.weighted)::numeric, 2), 0) AS avg_weighted
       FROM pjt_works w
