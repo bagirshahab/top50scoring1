@@ -162,7 +162,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { box-shadow: 
   background: linear-gradient(90deg, var(--red) 0%, var(--cyan-text) 100%);
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
 }
-.brand-sub { display: block; margin-top: 3px; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
+.brand-sub { display: block; margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
 .topbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
 .who { font-size: 13px; color: var(--muted); }
 .who b { color: var(--text); font-weight: 600; }
