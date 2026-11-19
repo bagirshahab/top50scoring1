@@ -24,7 +24,7 @@
         <div class="auth-icon"><i data-icon="bar-chart"></i></div>
         <span class="cd-eyebrow" id="cd-eyebrow">Judging platform</span>
         <h2 class="cd-title" id="cd-title">Opening soon</h2>
-        <p class="cd-sub" id="cd-sub">The platform opens for scoring on <b>6 November 2026</b>. Please check back then.</p>
+        <p class="cd-sub" id="cd-sub">The platform opens for scoring soon. Please check back then.</p>
 
         <!-- Live countdown (before judging opens) -->
         <div class="countdown" id="countdown" role="timer" aria-live="off">
@@ -56,9 +56,8 @@
   <script src="brand.js"></script>
   <script>
 
-    // Judging window (UTC+7 / WIB). Keep in sync with login.html and the server env vars.
-    const OPEN_AT  = new Date('2026-11-06T00:00:00+07:00').getTime();
-    const CLOSE_AT = new Date('2026-12-31T23:59:00+07:00').getTime();
+    // Judging window: JUDGING_OPEN_AT / JUDGING_CLOSE_AT come from criteria.js (the server enforces it).
+    const OPEN_AT = JUDGING_OPEN_AT, CLOSE_AT = JUDGING_CLOSE_AT;
 
     const el = {
       title: document.getElementById('cd-title'),
@@ -105,6 +104,7 @@
       }
 
       // State 1: before judging opens
+      el.sub.innerHTML = 'Scoring opens on <b>' + fmtOpenTime(OPEN_AT) + '</b>. Judge sign-in unlocks then.';
       const diff = OPEN_AT - now;
       el.days.textContent = pad(Math.floor(diff / 86400000));
       el.hours.textContent = pad(Math.floor((diff % 86400000) / 3600000));

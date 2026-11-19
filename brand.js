@@ -67,15 +67,15 @@
     var now = new Date();
     document.getElementById("live-clock").textContent = fmt ? fmt.format(now) : now.toLocaleTimeString();
     var el = document.getElementById("live-state");
-    if (typeof OPEN_AT === "undefined" || typeof CLOSE_AT === "undefined") { el.innerHTML = ""; return; }
+    if (typeof JUDGING_OPEN_AT === "undefined" || typeof JUDGING_CLOSE_AT === "undefined") { el.innerHTML = ""; return; }
     var t = now.getTime(), html;
-    if (t < OPEN_AT) html = '<span class="bdg bdg-warn">' + ico("status-in-progress") + " Opens soon</span>";
-    else if (t >= CLOSE_AT) html = '<span class="bdg bdg-bad">' + ico("lock-private") + " Judging closed</span>";
+    if (t < JUDGING_OPEN_AT) html = '<span class="bdg bdg-warn">' + ico("status-in-progress") + " Opens " + new Date(JUDGING_OPEN_AT).toLocaleString("en-GB", { timeZone: "Asia/Bangkok", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false }).replace(",", "") + "</span>";
+    else if (t >= JUDGING_CLOSE_AT) html = '<span class="bdg bdg-bad">' + ico("lock-private") + " Judging closed</span>";
     else html = '<span class="bdg bdg-ok">' + ico("status-positive") + " Judging is open</span>";
     if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; }
   }
   tick();
-  document.addEventListener("DOMContentLoaded", tick); // page scripts define OPEN_AT / CLOSE_AT after this file
+  document.addEventListener("DOMContentLoaded", tick); // criteria.js defines JUDGING_OPEN_AT / JUDGING_CLOSE_AT
   setInterval(tick, 1000);
 
   // ---- the cue board loop ----

@@ -111,8 +111,8 @@ Salin `.env.example` menjadi `.env.local` (untuk uji lokal), dan isi nilai yang 
 | `ADMIN_PASSWORD` | Password admin — buat yang kuat. |
 | `ALLOWED_ORIGIN` | Boleh `*`. Untuk lebih aman isi `https://aiforallhackathon.com`. |
 | `LEADERBOARD_PUBLIC` | Opsional. Set `false` untuk menyembunyikan leaderboard publik (mis. sebelum penjurian selesai). Default `true` (tampil). |
-| `JUDGING_OPENS_AT` | Opsional. Waktu buka penjurian (ISO 8601, mis. `2026-11-06T00:00:00+07:00`). Sebelum waktu ini, halaman utama menampilkan countdown dan juri tidak bisa login (admin tetap bisa). Default `2026-11-06T00:00:00+07:00`. |
-| `JUDGING_CLOSES_AT` | Opsional. Waktu tutup penjurian (ISO 8601, mis. `2026-11-08T15:00:00+07:00`). Pada/setelah waktu ini, halaman utama menampilkan "Judging Closed" dan juri tidak bisa login lagi (admin tetap bisa lewat `/login?admin=1`). Default `2026-11-08T15:00:00+07:00`. |
+| `JUDGING_OPENS_AT` | Opsional. Waktu buka penjurian (ISO 8601, mis. `2026-11-06T00:00:00+07:00`). Sebelum waktu ini, halaman utama menampilkan countdown dan juri tidak bisa login (admin tetap bisa). Default `2026-11-22T08:00:00+07:00` (Minggu 22 Nov 2026, 08:00 WIB/Bangkok). Berlaku di server untuk login, daftar project, dan penyimpanan skor juri; admin tidak dipengaruhi. Cek nilai efektif di `/api/health`. |
+| `JUDGING_CLOSES_AT` | Opsional. Waktu tutup penjurian (ISO 8601, mis. `2026-11-08T15:00:00+07:00`). Pada/setelah waktu ini, halaman utama menampilkan "Judging Closed" dan juri tidak bisa login lagi (admin tetap bisa lewat `/login?admin=1`). Default `2026-12-31T23:59:00+07:00`. |
 
 Admin login memakai `ADMIN_USERNAME` / `ADMIN_PASSWORD` (tidak perlu disimpan di DB). Akun juri dibuat lewat dashboard admin dan tersimpan ter-hash di tabel `pj_judges`.
 
@@ -196,7 +196,7 @@ Lalu cukup taruh tautan "Penjurian" di navigasi website utama.
 ## 8. Cara Pakai
 
 ### Halaman utama = Countdown
-- URL utama (`/`) menampilkan **halaman countdown** menuju waktu buka penjurian (`JUDGING_OPENS_AT`, default 6 Nov 2026).
+- URL utama (`/`) menampilkan **halaman countdown** menuju waktu buka penjurian (`JUDGING_OPENS_AT`, default 22 Nov 2026 08:00).
 - Selama countdown berjalan, juri **tidak bisa login** — baik dari UI maupun server (API menolak login juri sebelum waktunya). Admin **tetap bisa** login untuk menyiapkan karya & akun juri.
 - Begitu waktunya tiba, halaman countdown otomatis menampilkan tombol **Enter Judging Platform** menuju halaman login (`/login`).
 

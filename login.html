@@ -28,7 +28,7 @@
         <!-- Notices shown while judging is outside its window -->
         <div id="pre-open-notice" class="pre-open-notice" hidden>
           <i data-icon="status-in-progress"></i>
-          <span>Judging has not opened yet. Judge sign-in will unlock when judging opens.</span>
+          <span id="pre-open-text">Judging has not opened yet. Judge sign-in will unlock when judging opens.</span>
         </div>
         <div id="closed-notice" class="pre-open-notice closed" hidden>
           <i data-icon="lock-private"></i>
@@ -72,12 +72,10 @@
   <script src="brand.js"></script>
   <script>
 
-    // Judging window (UTC+7 / WIB). Keep in sync with index.html and the server env vars.
-    const OPEN_AT  = new Date('2026-11-06T00:00:00+07:00').getTime();
-    const CLOSE_AT = new Date('2026-12-31T23:59:00+07:00').getTime();
+    // Judging window: JUDGING_OPEN_AT / JUDGING_CLOSE_AT come from criteria.js (the server enforces it).
     const now = Date.now();
-    const BEFORE_OPEN = now < OPEN_AT;
-    const AFTER_CLOSE = now >= CLOSE_AT;
+    const BEFORE_OPEN = now < JUDGING_OPEN_AT;
+    const AFTER_CLOSE = now >= JUDGING_CLOSE_AT;
     const JUDGING_OPEN = !BEFORE_OPEN && !AFTER_CLOSE;
 
     // Once judging has closed, judges are sent to the landing page, which shows the "Judging closed" notice.
@@ -93,7 +91,7 @@
       if (role === 'judge' && !JUDGING_OPEN) {
         document.getElementById('login-msg').textContent = AFTER_CLOSE
           ? 'Judging has closed. Judge sign-in is no longer available.'
-          : 'Judge sign-in has not opened yet.';
+          : 'Judge sign-in opens on ' + fmtOpenTime(JUDGING_OPEN_AT) + '.';
         document.getElementById('login-msg').className = 'msg error';
         return;
       }
@@ -103,6 +101,8 @@
       document.getElementById('login-msg').textContent = '';
       document.getElementById('login-msg').className = 'msg';
     }
+
+    document.getElementById('pre-open-text').textContent = 'Judging has not opened yet. Judge sign-in opens on ' + fmtOpenTime(JUDGING_OPEN_AT) + '.';
 
     // Gate UI: flag Judge as locked and show the matching notice
     (function applyGateUI() {

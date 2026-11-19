@@ -10,7 +10,7 @@
 //     Working prototype 30 · Problem & Impact 20 · Solution Fit & Insight 20
 //     Feasibility & Risk 15 · Pitch & Team 15
 // =====================================================================
-import { sql, setCors, parseBody, requireRole, verifyToken, withRetry } from "./_lib.js";
+import { sql, setCors, parseBody, requireRole, verifyToken, withRetry, requireJudgingOpen } from "./_lib.js";
 
 const WEIGHTS = {
   prototype: 30,
@@ -37,6 +37,7 @@ export default async function handler(req, res) {
       if (!judge || judge.role !== "judge") {
         return res.status(401).json({ error: "You must be signed in as a judge." });
       }
+      if (!requireJudgingOpen(res, judge)) return;
       const workId = req.query.work_id;
       if (!workId) return res.status(400).json({ error: "work_id is required." });
 
@@ -52,6 +53,7 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
       const judge = requireRole(req, res, "judge");
       if (!judge) return;
+      if (!requireJudgingOpen(res, judge)) return; // an existing session cannot score outside the window
 
       const body = parseBody(req);
       const workId = body.work_id;

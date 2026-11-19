@@ -2,7 +2,7 @@
 //  GET /api/my-scores  — Daftar work_id yang sudah dinilai juri yg login.
 //  Dipakai panel juri untuk menandai karya "sudah dinilai".
 // =====================================================================
-import { sql, setCors, requireRole } from "./_lib.js";
+import { sql, setCors, requireRole, requireJudgingOpen } from "./_lib.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -11,6 +11,7 @@ export default async function handler(req, res) {
 
   const judge = requireRole(req, res, "judge");
   if (!judge) return;
+  if (!requireJudgingOpen(res, judge)) return;
 
   try {
     const rows = await sql`

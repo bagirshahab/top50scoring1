@@ -3,7 +3,7 @@
 //  Berguna untuk memastikan DATABASE_URL benar setelah deploy.
 //  Tidak membocorkan data sensitif.
 // =====================================================================
-import { sql, setCors } from "./_lib.js";
+import { sql, setCors, judgingState, JUDGING_OPENS_AT, JUDGING_CLOSES_AT } from "./_lib.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -19,6 +19,13 @@ export default async function handler(req, res) {
       ok: true,
       db: "connected",
       counts: { works, judges, scores },
+      // the window judges are held to (env JUDGING_OPENS_AT / JUDGING_CLOSES_AT win over the defaults)
+      judging: {
+        state: judgingState(),
+        opensAt: new Date(JUDGING_OPENS_AT).toISOString(),
+        closesAt: new Date(JUDGING_CLOSES_AT).toISOString(),
+        fromEnv: { opens: !!process.env.JUDGING_OPENS_AT, closes: !!process.env.JUDGING_CLOSES_AT },
+      },
       env: {
         DATABASE_URL: !!process.env.DATABASE_URL,
         JWT_SECRET: !!process.env.JWT_SECRET,

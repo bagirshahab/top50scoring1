@@ -16,11 +16,7 @@
 //  (same JUDGING_OPENS_AT as the login gate), so no data is served during
 //  the countdown regardless of how the page is reached.
 // =====================================================================
-import { sql, setCors } from "./_lib.js";
-
-const JUDGING_OPENS_AT = new Date(
-  process.env.JUDGING_OPENS_AT || "2026-11-06T00:00:00+07:00"
-).getTime();
+import { sql, setCors, judgingState } from "./_lib.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -28,7 +24,7 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed." });
 
   // Hidden while judging has not opened yet (during the countdown)
-  if (!isNaN(JUDGING_OPENS_AT) && Date.now() < JUDGING_OPENS_AT) {
+  if (judgingState() === "before") {
     return res.status(200).json({ published: false, ranking: [], stats: { totalWorks: 0, totalScored: 0 } });
   }
 

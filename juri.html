@@ -28,8 +28,8 @@
   <main class="wrap">
     <div class="page-head">
       <span class="eyebrow">Round 2 &middot; Top 20 &rarr; Top 5</span>
-      <h1>Projects to score</h1>
-      <p>Open a project to see its live prototype and submit your scores. You can change a score while judging is open. The No. column is the team's presentation order.</p>
+      <h1>Projects</h1>
+      <p>Listed in presentation order. Open a project to see its live prototype and submit your scores. You can change a score while judging is open.</p>
     </div>
 
     <section class="stats stats-3" aria-label="Your progress">
@@ -38,19 +38,7 @@
       <div class="stat"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total projects</div></div>
     </section>
 
-    <section class="list-tools" aria-label="Sort">
-      <label class="sort-select">
-        <span>Sort by</span>
-        <select id="sort-select">
-          <option value="status-asc">Not scored first</option>
-          <option value="status-desc">Scored first</option>
-          <option value="score-desc">Score, high to low</option>
-          <option value="score-asc">Score, low to high</option>
-          <option value="project-asc">Project name A to Z</option>
-          <option value="project-desc">Project name Z to A</option>
-        </select>
-      </label>
-    </section>
+    <section id="next-up" class="next-up" hidden aria-live="polite"></section>
 
     <div class="table-wrap">
       <table class="work-table">
@@ -58,10 +46,10 @@
         <thead>
           <tr>
             <th scope="col" class="c-order">No.</th>
-            <th scope="col" data-col="project" aria-sort="none"><button type="button" class="th-sort" title="Sort by project name">Project<span class="th-ic"></span></button></th>
+            <th scope="col">Project</th>
             <th scope="col" class="c-tech">Tech</th>
-            <th scope="col" data-col="status" aria-sort="none"><button type="button" class="th-sort" title="Sort by status">Status<span class="th-ic"></span></button></th>
-            <th scope="col" class="c-score" data-col="score" aria-sort="none"><button type="button" class="th-sort" title="Sort by score">Score<span class="th-ic"></span></button></th>
+            <th scope="col">Status</th>
+            <th scope="col" class="c-score">Score</th>
             <th scope="col" class="c-act"><span class="sr-only">Action</span></th>
           </tr>
         </thead>
@@ -69,7 +57,8 @@
           <tr><td colspan="6" class="empty"><div class="empty-ic"><i data-icon="status-in-progress" data-size="big"></i></div>Loading projects...</td></tr>
         </tbody>
       </table>
-    </div>  </main>
+    </div>
+  </main>
 
   <!-- Scoring sheet (full screen) -->
   <div id="score-modal" class="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="score-title">
@@ -83,6 +72,11 @@
           <div class="bdg-row" id="score-badges"></div>
         </div>
       </div>
+      <nav class="sheet-nav" aria-label="Move between projects">
+        <button type="button" class="btn btn-ghost" id="nav-prev" onclick="navigate(-1)"><i data-icon="angle-left"></i><span class="nav-lbl">Previous</span></button>
+        <span class="nav-pos" id="nav-pos" aria-live="polite"></span>
+        <button type="button" class="btn btn-ghost" id="nav-next" onclick="navigate(1)"><span class="nav-lbl">Next</span><i data-icon="angle-right"></i></button>
+      </nav>
     </div>
 
     <div class="sheet-tabs" role="tablist">

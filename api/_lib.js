@@ -71,6 +71,47 @@ export async function withRetry(fn, { tries = 3, baseMs = 250 } = {}) {
   throw lastErr;
 }
 
+// ---------------------------------------------------------------------
+//  Judging window (single source of truth on the server)
+//  Judges can sign in, see projects and score ONLY while the window is open.
+//  Admins are never blocked.
+//  Defaults: opens Sunday 22 Nov 2026 08:00 Bangkok time (UTC+7), closes 31 Dec 2026 23:59.
+//  Override with env JUDGING_OPENS_AT / JUDGING_CLOSES_AT (ISO 8601). If one of these is set in
+//  Vercel it wins over the default, so check /api/health to see the effective values.
+// ---------------------------------------------------------------------
+export const JUDGING_OPENS_AT = new Date(process.env.JUDGING_OPENS_AT || "2026-11-22T08:00:00+07:00").getTime();
+export const JUDGING_CLOSES_AT = new Date(process.env.JUDGING_CLOSES_AT || "2026-12-31T23:59:00+07:00").getTime();
+
+// "before" | "open" | "closed"
+export function judgingState(now = Date.now()) {
+  if (!isNaN(JUDGING_OPENS_AT) && now < JUDGING_OPENS_AT) return "before";
+  if (!isNaN(JUDGING_CLOSES_AT) && now >= JUDGING_CLOSES_AT) return "closed";
+  return "open";
+}
+
+// e.g. "Sunday, November 22, 2026, 8:00 AM (Bangkok time)"
+export function fmtWindow(t) {
+  const d = new Date(t);
+  const date = d.toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const time = d.toLocaleTimeString("en-US", { timeZone: "Asia/Bangkok", hour: "numeric", minute: "2-digit", hour12: true });
+  return `${date}, ${time} (Bangkok time)`;
+}
+
+export function judgingBlockMessage(state) {
+  return state === "before"
+    ? `Judging has not opened yet. It opens on ${fmtWindow(JUDGING_OPENS_AT)}.`
+    : `Judging is closed. The judging period ended on ${fmtWindow(JUDGING_CLOSES_AT)}.`;
+}
+
+// Use on judge endpoints: returns true when the request may continue, otherwise sends 403.
+export function requireJudgingOpen(res, user) {
+  if (!user || user.role !== "judge") return true; // admins are never blocked
+  const state = judgingState();
+  if (state === "open") return true;
+  res.status(403).json({ error: judgingBlockMessage(state), judging: state });
+  return false;
+}
+
 // ---- Buat kode karya unik berikutnya: KARYA-01, KARYA-02, ... ----
 export async function nextWorkCode() {
   const rows = await sql`

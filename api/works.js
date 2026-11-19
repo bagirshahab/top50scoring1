@@ -13,7 +13,7 @@
 //          screenshot_url, fallback (flag: link unavailable, show backup material).
 //  Judges never see the internal link-check note.
 // =====================================================================
-import { sql, setCors, parseBody, verifyToken, requireRole, nextWorkCode } from "./_lib.js";
+import { sql, setCors, parseBody, verifyToken, requireRole, nextWorkCode, requireJudgingOpen } from "./_lib.js";
 import { MAX_WORKS, readWorkFields } from "./_works-util.js";
 
 function dupMessage(err) {
@@ -29,6 +29,7 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       const user = verifyToken(req);
       if (!user) return res.status(401).json({ error: "Not signed in." });
+      if (!requireJudgingOpen(res, user)) return; // judges see the project list only while judging is open
 
       const rows = await sql`
         SELECT id, code, team_name, project_title, category, project_url, position, created_at,

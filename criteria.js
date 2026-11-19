@@ -37,3 +37,15 @@ const CRITERIA = [
 ];
 
 const TOP_N = 5; // projects that advance from Top 20 to Top 5
+
+// Judging window shown on the sign-in and landing screens.
+// The server enforces it (api/_lib.js). Keep these two values in sync with it.
+// Opens Sunday 22 Nov 2026, 08:00 Bangkok time (UTC+7).
+const JUDGING_OPEN_AT  = new Date("2026-11-22T08:00:00+07:00").getTime();
+const JUDGING_CLOSE_AT = new Date("2026-12-31T23:59:00+07:00").getTime();
+function fmtOpenTime(t) {
+  var d = new Date(t);
+  var date = d.toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  var time = d.toLocaleTimeString("en-US", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit", hour12: false });
+  return date + ", " + time + " (Bangkok time)";
+}

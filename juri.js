@@ -154,42 +154,10 @@ function youtubeEmbed(url) {
   } catch { return null; }
 }
 
-// ---------- List: table view with sorting ----------
-// The judge's last sort is remembered on this device.
-const VIEW_KEY = `pjt_list_view_${judge ? judge.id : "x"}`;
-let VIEW = { sort: "status", dir: "asc" }; // default: not scored first
-try {
-  const v = JSON.parse(localStorage.getItem(VIEW_KEY) || "null");
-  if (v && ["project", "status", "score"].includes(v.sort)) { // a saved "order" sort from an earlier version falls back to the default
-    VIEW = { sort: v.sort, dir: v.dir === "desc" ? "desc" : "asc" };
-  }
-} catch { /* ignore a corrupt saved view */ }
-function saveView() { try { localStorage.setItem(VIEW_KEY, JSON.stringify(VIEW)); } catch { /* blocked */ } }
-
+// ---------- List: always in presentation order ----------
 const isScored = (w) => SCORES.has(w.id);
 const byOrder = (a, b) => (a.position || 0) - (b.position || 0);
-
-function visibleWorks() {
-  const list = WORKS.slice();
-  const dir = VIEW.dir === "desc" ? -1 : 1;
-  if (VIEW.sort === "score") {
-    // Unscored projects always sit below the scored ones, in presentation order.
-    const scored = list.filter(isScored).sort((a, b) => dir * (Number(SCORES.get(a.id)) - Number(SCORES.get(b.id))) || byOrder(a, b));
-    return scored.concat(list.filter((w) => !isScored(w)).sort(byOrder));
-  }
-  const cmp = {
-    order: byOrder,
-    project: (a, b) => a.project_title.localeCompare(b.project_title, undefined, { sensitivity: "base", numeric: true }),
-    status: (a, b) => (isScored(a) ? 1 : 0) - (isScored(b) ? 1 : 0), // ascending = not scored first
-  }[VIEW.sort];
-  return list.sort((a, b) => dir * cmp(a, b) || byOrder(a, b));
-}
-
-function setSort(key) {
-  if (VIEW.sort === key) VIEW.dir = VIEW.dir === "asc" ? "desc" : "asc";
-  else { VIEW.sort = key; VIEW.dir = key === "score" ? "desc" : "asc"; }
-  saveView(); renderList();
-}
+const orderedWorks = () => WORKS.slice().sort(byOrder);
 
 function statusHtml(w) {
   if (loadDraft(w.id)) return `<span class="chip pending">${icon("status-warning")} Unsaved draft</span>`;
@@ -210,33 +178,44 @@ function updateStats() {
   document.getElementById("stat-left").textContent = Math.max(0, total - done);
 }
 
+// "Up next": the first project, in presentation order, that this judge has not scored yet.
+function renderNextUp() {
+  const box = document.getElementById("next-up");
+  if (!WORKS.length) { box.hidden = true; return; }
+  const next = orderedWorks().find((w) => !isScored(w));
+  box.hidden = false;
+  if (next) {
+    box.className = "next-up";
+    box.innerHTML = `
+      <span class="next-ic">${icon("angle-right")}</span>
+      <div class="next-text"><span class="next-label">Up next</span><b>No. ${next.position || ""} &middot; ${esc(next.project_title)}</b></div>
+      <button type="button" class="btn btn-primary" onclick="openScore('${esc(next.id)}')">Score this project ${icon("angle-right")}</button>`;
+  } else {
+    box.className = "next-up is-complete";
+    box.innerHTML = `
+      <span class="next-ic">${icon("status-positive")}</span>
+      <div class="next-text"><span class="next-label">All done</span><b>You have scored every project. Open any row to review or edit a score.</b></div>`;
+  }
+}
+
 function renderList() {
   const body = document.getElementById("work-list");
   updateStats();
-
-  // controls reflect the current view
-  document.querySelectorAll("th[data-col]").forEach((th) => {
-    const on = th.dataset.col === VIEW.sort;
-    th.setAttribute("aria-sort", on ? (VIEW.dir === "asc" ? "ascending" : "descending") : "none");
-    const ic = th.querySelector(".th-ic");
-    if (ic) ic.innerHTML = on ? icon(VIEW.dir === "asc" ? "angle-up" : "angle-down") : "";
-  });
-  const sel = document.getElementById("sort-select");
-  if (sel) sel.value = `${VIEW.sort}-${VIEW.dir}`;
+  renderNextUp();
 
   if (!WORKS.length) {
     body.innerHTML = `<tr><td colspan="6" class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet. Please wait for the admin to add them.</td></tr>`;
     return;
   }
-  const rows = visibleWorks();
-  body.innerHTML = rows.map((w) => {
+  const nextId = (orderedWorks().find((w) => !isScored(w)) || {}).id;
+  body.innerHTML = orderedWorks().map((w) => {
     const scored = isScored(w);
     const sub = teamSubline(w);
     const tags = (showTeamNo(w) ? `<span class="bdg bdg-team">Team ${w.team_number}</span>` : "") +
       (w.fallback ? `<span class="bdg bdg-warn">${icon("status-warning")} Link unavailable</span>` : "");
     const tech = techChips(w);
     return `
-      <tr class="work-tr ${scored ? "is-done" : ""}" data-id="${esc(w.id)}" onclick="openScore('${esc(w.id)}')">
+      <tr class="work-tr ${scored ? "is-done" : ""} ${w.id === nextId ? "is-next" : ""}" data-id="${esc(w.id)}" onclick="openScore('${esc(w.id)}')">
         <td class="c-order"><span class="num">${w.position || ""}</span></td>
         <td class="c-proj">
           <button type="button" class="row-link" onclick="event.stopPropagation(); openScore('${esc(w.id)}')">${esc(w.project_title)}</button>
@@ -247,20 +226,13 @@ function renderList() {
         <td class="c-tech">${tech || '<span class="t-mute">-</span>'}</td>
         <td class="c-status">${statusHtml(w)}</td>
         <td class="c-score">${scored ? `<span class="score-cell">${Number(SCORES.get(w.id)).toFixed(2)}</span>` : '<span class="t-mute">-</span>'}</td>
-        <td class="c-act"><button type="button" class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openScore('${esc(w.id)}')">${scored ? "Edit" : "Score"} ${icon("angle-right")}</button></td>
+        <td class="c-act"><button type="button" class="btn ${w.id === nextId ? "btn-primary" : "btn-ghost"} btn-sm" onclick="event.stopPropagation(); openScore('${esc(w.id)}')">${scored ? "Edit" : "Score"} ${icon("angle-right")}</button></td>
       </tr>`;
   }).join("");
 }
 
-// A saved (or failed) score changes the row's status and its place in the sort order.
+// A saved (or failed) score changes a row's status and who is "up next".
 function refreshRow() { renderList(); }
-
-// ---- list controls ----
-document.querySelectorAll("th[data-col] .th-sort").forEach((b) => b.addEventListener("click", () => setSort(b.closest("th").dataset.col)));
-document.getElementById("sort-select").addEventListener("change", (e) => {
-  const [sort, dir] = e.target.value.split("-");
-  VIEW.sort = sort; VIEW.dir = dir; saveView(); renderList();
-});
 
 // ---------- Scoring sheet ----------
 function setPane(name) {
@@ -329,7 +301,7 @@ document.getElementById("score-status").addEventListener("click", (e) => {
   if (!e.target.closest("[data-unlock]")) return;
   setLocked(false);
   document.getElementById("score-status").innerHTML =
-    `<span class="chip pending">${icon("edit")} Editing. Press Submit Score to save your changes.</span>`;
+    `<span class="chip pending">${icon("edit")} Editing. Press Submit to save your changes.</span>`;
   document.getElementById("rng-" + CRITERIA[0].key).focus();
 });
 
@@ -339,6 +311,7 @@ async function openScore(workId) {
   currentWorkId = workId;
 
   document.getElementById("score-order").textContent = "#" + (work.position || "");
+  updateNav();
   document.getElementById("score-title").textContent = work.project_title;
   document.getElementById("score-team").textContent = teamSubline(work);
   document.getElementById("score-url").textContent = work.project_url;
@@ -361,6 +334,7 @@ async function openScore(workId) {
   document.getElementById("score-modal").hidden = false;
   document.body.classList.add("no-scroll");
   document.querySelector(".sheet-body").scrollTop = 0;
+  document.getElementById("pane-score").scrollTop = 0;
   formSnapshot = formState();
   setPane("score");
   if (WIDE.matches) ensureFrame();
@@ -381,6 +355,7 @@ async function openScore(workId) {
       document.getElementById("score-status").innerHTML = '<span class="chip">Not scored yet</span>';
     }
   } catch {
+    if (currentWorkId !== workId) return;
     if (SCORES.has(workId)) {
       // Keep it locked: showing defaults for an already scored project would be misleading.
       document.getElementById("score-status").innerHTML =
@@ -406,6 +381,41 @@ async function openScore(workId) {
   }
   recalcTotal();
   updateScrollHint();
+}
+
+// ---------- Moving between projects (presentation order) ----------
+function nextAfter(workId) {
+  const list = orderedWorks();
+  const i = list.findIndex((w) => w.id === workId);
+  return i >= 0 ? list[i + 1] || null : null;
+}
+function submitLabel() { return nextAfter(currentWorkId) ? "Submit and next" : "Submit score"; }
+function updateNav() {
+  const list = orderedWorks();
+  const i = list.findIndex((w) => w.id === currentWorkId);
+  document.getElementById("nav-pos").textContent = i >= 0 ? (i + 1) + " of " + list.length : "";
+  document.getElementById("nav-prev").disabled = i <= 0;
+  document.getElementById("nav-next").disabled = i < 0 || i >= list.length - 1;
+  const btn = document.getElementById("score-submit");
+  if (!btn.dataset.busy) btn.textContent = submitLabel();
+}
+// Previous / Next without saving. An untouched project moves straight on; an edited one asks first.
+async function navigate(delta) {
+  if (!currentWorkId) return;
+  const list = orderedWorks();
+  const i = list.findIndex((w) => w.id === currentWorkId);
+  const target = list[i + delta];
+  if (!target) return;
+  if (isDirty()) {
+    const ok = await askConfirm({
+      title: "Discard your changes?",
+      message: "You have unsaved changes on this project. Move to " + target.project_title + " anyway?",
+      confirmText: "Yes, move on",
+      cancelText: "Stay and score",
+    });
+    if (!ok) return;
+  }
+  openScore(target.id);
 }
 
 // ---------- Leaving the scoring sheet ----------
@@ -493,16 +503,18 @@ document.getElementById("score-form").addEventListener("submit", async (e) => {
   const workId = currentWorkId;
   saveDraft(workId, payload);
 
-  btn.disabled = true; btn.textContent = "Saving...";
+  btn.disabled = true; btn.dataset.busy = "1"; btn.textContent = "Saving...";
   try {
     const data = await postWithRetry("/api/scores", payload, {
       onAttempt: (n, total) => { btn.textContent = n === 1 ? "Saving..." : `Retrying (${n}/${total})...`; },
     });
     clearDraft(workId);
     SCORES.set(workId, data.weighted);
-    toast(`Score saved: ${Number(data.weighted).toFixed(2)} / 100`);
-    closeScore();
+    const next = nextAfter(workId);
+    toast(`Score saved: ${Number(data.weighted).toFixed(2)} / 100` + (next ? `. Next: ${next.project_title}` : ". That was the last project."));
     refreshRow(workId);
+    delete btn.dataset.busy;
+    if (next) openScore(next.id); else closeScore();
   } catch (err) {
     msg.className = "msg error";
     if (err.expired) {
@@ -512,7 +524,10 @@ document.getElementById("score-form").addEventListener("submit", async (e) => {
     }
     refreshRow(workId);
   } finally {
-    btn.disabled = false; btn.textContent = "Submit Score";
+    delete btn.dataset.busy;
+    // A locked (already scored) next project keeps its Submit button off.
+    btn.disabled = document.getElementById("score-form").classList.contains("is-locked");
+    btn.textContent = currentWorkId ? submitLabel() : "Submit score";
   }
 });
 

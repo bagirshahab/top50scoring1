@@ -14,14 +14,7 @@
 //  Admins are always allowed so they can set up / review any time.
 // =====================================================================
 import bcrypt from "bcryptjs";
-import { sql, setCors, parseBody, signToken } from "./_lib.js";
-
-const JUDGING_OPENS_AT = new Date(
-  process.env.JUDGING_OPENS_AT || "2026-11-06T00:00:00+07:00"
-).getTime();
-const JUDGING_CLOSES_AT = new Date(
-  process.env.JUDGING_CLOSES_AT || "2026-12-31T23:59:00+07:00"
-).getTime();
+import { sql, setCors, parseBody, signToken, judgingState, judgingBlockMessage } from "./_lib.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -59,23 +52,10 @@ export default async function handler(req, res) {
 
     // ---------------- JUDGE ----------------
     if (role === "judge") {
-      // Gate: judges can only sign in while judging is open.
-      // Format as e.g. "November 8, 2026, 3 PM" (hour only, no minutes, no "WIB").
-      const fmt = (t) => {
-        const d = new Date(t);
-        const date = d.toLocaleDateString("en-US", { timeZone: "Asia/Jakarta", year: "numeric", month: "long", day: "numeric" });
-        const hour = d.toLocaleTimeString("en-US", { timeZone: "Asia/Jakarta", hour: "numeric", hour12: true }).replace(/\s?[AP]M$/i, (m) => " " + m.trim().toUpperCase());
-        return `${date}, ${hour}`;
-      };
-      if (!isNaN(JUDGING_OPENS_AT) && Date.now() < JUDGING_OPENS_AT) {
-        return res.status(403).json({
-          error: `Judging has not opened yet. Sign-in for judges opens on ${fmt(JUDGING_OPENS_AT)}.`,
-        });
-      }
-      if (!isNaN(JUDGING_CLOSES_AT) && Date.now() >= JUDGING_CLOSES_AT) {
-        return res.status(403).json({
-          error: `Judging is closed. The judging period ended on ${fmt(JUDGING_CLOSES_AT)}. Judge sign-in is no longer available.`,
-        });
+      // Gate: judges can only sign in while judging is open (window defined in _lib.js).
+      const state = judgingState();
+      if (state !== "open") {
+        return res.status(403).json({ error: judgingBlockMessage(state), judging: state });
       }
 
       const rows = await sql`
