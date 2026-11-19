@@ -677,91 +677,79 @@ tr.avg-row td { background: var(--inset); font-weight: 700; border-top: 1px soli
 
 /* =====================================================================
    SIGN-IN / LANDING: one shared atmosphere
-   Both halves sit on the same drifting colour field. The form is a lifted
-   card on it, and a lit seam (the brand gradient) divides the halves.
-   Why a violet/blue bridge: red straight into cyan passes through grey mud.
-   Routing the gradient through magenta and indigo keeps every stop saturated.
+   Both halves sit on the same calm field: deep navy, a cyan glow as the main
+   light, and only a small touch of brand red. The form is a lifted card on it
+   and a thin cyan seam divides the halves.
    ===================================================================== */
 :root {
-  --g1: #FF3040; --g2: #D43FBE; --g3: #7C5CFF; --g4: #3E9BFF; --g5: #22D3EE;
-  --grad: linear-gradient(90deg, #FF3040 0%, #D43FBE 34%, #7C5CFF 62%, #22D3EE 100%);
-  --grad-v: linear-gradient(180deg, #FF3040 0%, #D43FBE 34%, #7C5CFF 62%, #22D3EE 100%);
+  --grad: linear-gradient(90deg, #E60000 0%, #22D3EE 100%);   /* wordmark: the two brand colours, nothing else */
+  --seam: linear-gradient(180deg, transparent 0%, var(--cyan) 28%, var(--cyan) 72%, transparent 100%);
+  --seam-h: linear-gradient(90deg, transparent 0%, var(--cyan) 28%, var(--cyan) 72%, transparent 100%);
 }
-:root[data-theme="light"] {
-  --g1: #E0112B; --g2: #B5309C; --g3: #5B45E0; --g4: #1F78D6; --g5: #0891B2;
-  --grad: linear-gradient(90deg, #E0112B 0%, #B5309C 34%, #5B45E0 62%, #0891B2 100%);
-  --grad-v: linear-gradient(180deg, #E0112B 0%, #B5309C 34%, #5B45E0 62%, #0891B2 100%);
-}
-/* the brand gradient everywhere the wordmark appears */
+:root[data-theme="light"] { --grad: linear-gradient(90deg, #D40000 0%, #0A7589 100%); }
 .brand-text b, .logo-wordmark { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
 
 .auth-shell {
-  position: relative; isolation: isolate; overflow: hidden; background: #070B13;
+  position: relative; isolation: isolate; overflow: hidden; background: #060A12;
   /* translucent surfaces: every component inside inherits these */
-  --surface: rgba(255, 255, 255, 0.045);
-  --raised: rgba(255, 255, 255, 0.07);
-  --inset: rgba(4, 8, 16, 0.42);
-  --line: rgba(255, 255, 255, 0.11);
-  --line-strong: rgba(255, 255, 255, 0.22);
+  --surface: rgba(255, 255, 255, 0.04);
+  --raised: rgba(255, 255, 255, 0.065);
+  --inset: rgba(4, 8, 16, 0.45);
+  --line: rgba(255, 255, 255, 0.10);
+  --line-strong: rgba(255, 255, 255, 0.2);
   --track: rgba(255, 255, 255, 0.14);
   --hover: rgba(255, 255, 255, 0.06);
 }
 :root[data-theme="light"] .auth-shell {
-  background: #F4F6FB;
+  background: #F3F6FA;
   --surface: rgba(255, 255, 255, 0.62);
   --raised: rgba(255, 255, 255, 0.8);
-  --inset: rgba(255, 255, 255, 0.78);
+  --inset: rgba(255, 255, 255, 0.8);
   --line: rgba(14, 21, 35, 0.12);
   --line-strong: rgba(14, 21, 35, 0.24);
   --track: rgba(14, 21, 35, 0.12);
   --hover: rgba(14, 21, 35, 0.05);
 }
 
-/* drifting colour field */
+/* slow drifting light: cyan leads, blue gives depth, red is a small accent */
 .auth-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-.auth-bg i { position: absolute; display: block; border-radius: 50%; filter: blur(90px); will-change: transform; }
-.auth-bg i:nth-child(1) { width: 62vmax; height: 62vmax; left: -22vmax; top: -30vmax; background: #F0202F; opacity: 0.5; animation: drift-a 28s ease-in-out infinite alternate; }
-.auth-bg i:nth-child(2) { width: 56vmax; height: 56vmax; right: -24vmax; bottom: -30vmax; background: #1BC8EA; opacity: 0.42; animation: drift-b 32s ease-in-out infinite alternate; }
-.auth-bg i:nth-child(3) { width: 44vmax; height: 44vmax; left: 38vw; top: 8vh; background: #5B45E8; opacity: 0.4; animation: drift-c 36s ease-in-out infinite alternate; }
-:root[data-theme="light"] .auth-bg i:nth-child(1) { opacity: 0.26; }
-:root[data-theme="light"] .auth-bg i:nth-child(2) { opacity: 0.3; }
-:root[data-theme="light"] .auth-bg i:nth-child(3) { opacity: 0.2; }
-@keyframes drift-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(9vw, 12vh) scale(1.12); } }
-@keyframes drift-b { from { transform: translate(0, 0) scale(1); } to { transform: translate(-10vw, -9vh) scale(1.1); } }
-@keyframes drift-c { from { transform: translate(0, 0) scale(1); } to { transform: translate(-14vw, 14vh) scale(0.92); } }
+.auth-bg i { position: absolute; display: block; border-radius: 50%; filter: blur(100px); will-change: transform; }
+.auth-bg i:nth-child(1) { width: 38vmax; height: 38vmax; left: -16vmax; top: -20vmax; background: #E60000; opacity: 0.16; animation: drift-a 30s ease-in-out infinite alternate; }
+.auth-bg i:nth-child(2) { width: 62vmax; height: 62vmax; right: -24vmax; bottom: -30vmax; background: #14B8D8; opacity: 0.34; animation: drift-b 34s ease-in-out infinite alternate; }
+.auth-bg i:nth-child(3) { width: 50vmax; height: 50vmax; left: 6vw; top: 30vh; background: #1B3FA0; opacity: 0.3; animation: drift-c 38s ease-in-out infinite alternate; }
+:root[data-theme="light"] .auth-bg i:nth-child(1) { opacity: 0.10; }
+:root[data-theme="light"] .auth-bg i:nth-child(2) { opacity: 0.26; }
+:root[data-theme="light"] .auth-bg i:nth-child(3) { opacity: 0.14; }
+@keyframes drift-a { from { transform: translate(0, 0) scale(1); } to { transform: translate(7vw, 9vh) scale(1.1); } }
+@keyframes drift-b { from { transform: translate(0, 0) scale(1); } to { transform: translate(-9vw, -8vh) scale(1.08); } }
+@keyframes drift-c { from { transform: translate(0, 0) scale(1); } to { transform: translate(10vw, -8vh) scale(0.94); } }
 @media (prefers-reduced-motion: reduce) { .auth-bg i { animation: none !important; } }
 
-/* left half: transparent, divided from the form by the lit seam */
-.auth-shell .auth-brand { background: transparent; border-right: 2px solid transparent; border-image: var(--grad-v) 1; }
+/* left half: transparent, divided from the form by a thin cyan seam */
+.auth-shell .auth-brand { background: transparent; border-right: 1px solid transparent; border-image: var(--seam) 1; }
 .auth-shell .auth-panel { background: transparent; }
 
 /* right half: the form is a lifted card */
 .auth-shell .auth-card {
   max-width: 420px; padding: 32px 30px 28px; border-radius: 20px;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.035));
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 :root[data-theme="light"] .auth-shell .auth-card {
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.7));
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.74));
   border-color: rgba(14, 21, 35, 0.1);
-  box-shadow: 0 30px 70px rgba(30, 40, 90, 0.16), inset 0 1px 0 #fff;
+  box-shadow: 0 30px 70px rgba(30, 50, 90, 0.14), inset 0 1px 0 #fff;
 }
 .auth-icon { width: 46px; height: 46px; display: grid; place-items: center; margin-bottom: 18px; border-radius: 12px; color: var(--cyan-text); background: var(--cyan-soft); border: 1px solid var(--cyan-line); }
 .auth-icon .ico { width: 22px; height: 22px; }
 .auth-shell input[type="text"], .auth-shell input[type="password"] { background: var(--inset); }
 
 /* brand panel pieces on the shared field */
-.auth-shell .cue-stage { background: rgba(4, 8, 16, 0.36); border-color: var(--line); }
+.auth-shell .cue-stage { background: rgba(4, 8, 16, 0.4); border-color: var(--line); }
 :root[data-theme="light"] .auth-shell .cue-stage { background: rgba(255, 255, 255, 0.62); }
-.auth-shell .cue-tile.is-top { background: linear-gradient(145deg, var(--g2), var(--g3) 55%, var(--g5)); border-color: transparent; color: #fff; box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.28); }
-.weights i:nth-child(1) { background: var(--g1); }
-.weights i:nth-child(2) { background: var(--g2); }
-.weights i:nth-child(3) { background: var(--g3); }
-.weights i:nth-child(4) { background: var(--g4); }
-.weights i:nth-child(5) { background: var(--g5); }
-.auth-title .accent { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.auth-title .accent { color: var(--cyan-text); }
 
 @media (max-width: 1000px) {
-  .auth-shell .auth-brand { border-right: none; border-bottom: 2px solid transparent; border-image: var(--grad) 1; }
+  .auth-shell .auth-brand { border-right: none; border-bottom: 1px solid transparent; border-image: var(--seam-h) 1; }
 }
