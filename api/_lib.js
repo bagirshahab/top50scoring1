@@ -93,7 +93,7 @@ export function judgingState(now = Date.now()) {
 export function fmtWindow(t) {
   const d = new Date(t);
   const date = d.toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "long", year: "numeric", month: "long", day: "numeric" });
-  const time = d.toLocaleTimeString("en-US", { timeZone: "Asia/Bangkok", hour: "numeric", minute: "2-digit", hour12: true });
+  const time = d.toLocaleTimeString("en-US", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit", hour12: true });
   return `${date}, ${time} (Bangkok time)`;
 }
 
