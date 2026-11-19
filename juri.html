@@ -28,8 +28,8 @@
   <main class="wrap">
     <div class="page-head">
       <span class="eyebrow">Round 2 &middot; Top 20 &rarr; Top 5</span>
-      <h1>Presentation order</h1>
-      <p>Open a project to see its live prototype and submit your scores. You can change a score while judging is open.</p>
+      <h1>Projects to score</h1>
+      <p>Open a project to see its live prototype and submit your scores. You can change a score while judging is open. The No. column is the team's presentation order.</p>
     </div>
 
     <section class="stats stats-3" aria-label="Your progress">
@@ -47,8 +47,6 @@
       <label class="sort-select">
         <span>Sort by</span>
         <select id="sort-select">
-          <option value="order-asc">Presentation order</option>
-          <option value="order-desc">Presentation order (reverse)</option>
           <option value="status-asc">Not scored first</option>
           <option value="status-desc">Scored first</option>
           <option value="score-desc">Score, high to low</option>
@@ -64,7 +62,7 @@
         <caption class="sr-only">Projects in presentation order, with your scoring status</caption>
         <thead>
           <tr>
-            <th scope="col" class="c-order" data-col="order" aria-sort="ascending"><button type="button" class="th-sort" title="Sort by presentation order">No.<span class="th-ic"></span></button></th>
+            <th scope="col" class="c-order">No.</th>
             <th scope="col" data-col="project" aria-sort="none"><button type="button" class="th-sort" title="Sort by project name">Project<span class="th-ic"></span></button></th>
             <th scope="col" class="c-tech">Tech</th>
             <th scope="col" data-col="status" aria-sort="none"><button type="button" class="th-sort" title="Sort by status">Status<span class="th-ic"></span></button></th>

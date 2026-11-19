@@ -157,10 +157,10 @@ function youtubeEmbed(url) {
 // ---------- List: table view with filter and sort ----------
 // The judge's last filter/sort is remembered on this device.
 const VIEW_KEY = `pjt_list_view_${judge ? judge.id : "x"}`;
-let VIEW = { sort: "order", dir: "asc", filter: "all" };
+let VIEW = { sort: "status", dir: "asc", filter: "all" }; // default: not scored first
 try {
   const v = JSON.parse(localStorage.getItem(VIEW_KEY) || "null");
-  if (v && ["order", "project", "status", "score"].includes(v.sort)) {
+  if (v && ["project", "status", "score"].includes(v.sort)) { // a saved "order" sort from an earlier version falls back to the default
     VIEW = { sort: v.sort, dir: v.dir === "desc" ? "desc" : "asc", filter: ["all", "todo", "done"].includes(v.filter) ? v.filter : "all" };
   }
 } catch { /* ignore a corrupt saved view */ }
