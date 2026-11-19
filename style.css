@@ -753,3 +753,22 @@ input[type="text"], input[type="password"], input[type="number"], textarea, sele
 .pw-toggle .ico { width: 20px; height: 20px; }
 .remember-row { margin: -2px 0 18px; align-items: center; font-size: 14px; color: var(--text); user-select: none; }
 .remember-row span { color: var(--text); }
+
+/* ===== Scored project opens read-only (greyed) until "edit" is clicked ===== */
+.is-locked .crit { opacity: 0.6; }
+.is-locked .crit-range { filter: grayscale(1); cursor: not-allowed; }
+.is-locked .step-num { color: var(--muted) !important; background: rgba(var(--ink), 0.5); }
+.is-locked .crit-title, .is-locked .weight-badge { color: var(--muted); }
+.step-btn:disabled, .crit-range:disabled, .step-num:disabled, #score-comment:disabled { cursor: not-allowed; }
+.step-btn:disabled { opacity: 0.45; }
+#score-comment:disabled { opacity: 0.6; }
+.is-locked .crit-guide summary { opacity: 1; } /* the scoring guide stays readable */
+.is-locked .crit-guide { position: relative; z-index: 1; }
+
+.score-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.link-btn {
+  padding: 8px 4px; border: none; background: none; font: inherit; font-size: 13.5px; font-weight: 800;
+  color: var(--cyan); text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.link-btn:hover { color: var(--text); }
+.link-btn:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; border-radius: 6px; }

@@ -245,6 +245,24 @@ WIDE.addEventListener("change", () => {
   if (currentWorkId) setPane(document.querySelector(".sheet-tab.active")?.dataset.pane || "score");
 });
 
+// ---------- Locked (read-only) state ----------
+// A project that already has a score opens greyed out. The judge has to click "edit" on purpose,
+// so a saved score is never changed (or re-submitted) by accident.
+function setLocked(locked) {
+  document.getElementById("score-form").classList.toggle("is-locked", locked);
+  document.querySelectorAll("#score-form .crit-range, #score-form .step-num, #score-form .step-btn, #score-comment, #score-submit")
+    .forEach((el) => { el.disabled = locked; });
+}
+const EDIT_LINK = '<button type="button" class="link-btn" data-unlock>Click here if you want to edit the score</button>';
+
+document.getElementById("score-status").addEventListener("click", (e) => {
+  if (!e.target.closest("[data-unlock]")) return;
+  setLocked(false);
+  document.getElementById("score-status").innerHTML =
+    `<span class="chip pending">${icon("edit")} Editing. Press Submit Score to save your changes.</span>`;
+  document.getElementById("rng-" + CRITERIA[0].key).focus();
+});
+
 async function openScore(workId) {
   const work = WORKS.find((w) => w.id === workId);
   if (!work) return;
@@ -265,7 +283,10 @@ async function openScore(workId) {
   CRITERIA.forEach((p) => setParamValue(p.key, DEFAULT_SCORE));
   document.querySelectorAll(".crit-guide").forEach((d) => (d.open = false));
   document.getElementById("score-comment").value = "";
-  document.getElementById("score-status").innerHTML = "";
+  // Already scored: start greyed out until the saved values are loaded.
+  const alreadyScored = SCORES.has(workId);
+  setLocked(alreadyScored);
+  document.getElementById("score-status").innerHTML = alreadyScored ? '<span class="chip">Loading your saved score...</span>' : "";
 
   document.getElementById("score-modal").hidden = false;
   document.body.classList.add("no-scroll");
@@ -282,17 +303,29 @@ async function openScore(workId) {
     if (data.score) {
       CRITERIA.forEach((p) => setParamValue(p.key, data.score[p.key]));
       document.getElementById("score-comment").value = data.score.comment || "";
-      document.getElementById("score-status").innerHTML = `<span class="chip done">${icon("status-positive")} Previously scored. You can edit.</span>`;
+      setLocked(true);
+      document.getElementById("score-status").innerHTML =
+        `<span class="chip done">${icon("status-positive")} Previously scored.</span> ${EDIT_LINK}`;
     } else {
+      setLocked(false);
       document.getElementById("score-status").innerHTML = '<span class="chip">Not scored yet</span>';
     }
-  } catch { /* keep defaults */ }
+  } catch {
+    if (SCORES.has(workId)) {
+      // Keep it locked: showing defaults for an already scored project would be misleading.
+      document.getElementById("score-status").innerHTML =
+        `<span class="chip pending">${icon("status-warning")} Could not load your saved score. Go back and open this project again.</span>`;
+    } else {
+      setLocked(false);
+    }
+  }
 
   // What the server (or the defaults) holds. Restoring a local draft below counts as an edit.
   formSnapshot = formState();
 
   const draft = loadDraft(workId);
   if (draft && currentWorkId === workId) {
+    setLocked(false); // unsaved edits from an earlier attempt: let the judge finish them
     CRITERIA.forEach((p) => {
       const v = parseInt(draft.payload[p.key], 10);
       if (!isNaN(v)) setParamValue(p.key, Math.min(100, Math.max(1, v)));
@@ -370,6 +403,7 @@ function closeScore() {
 document.getElementById("score-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!currentWorkId) return;
+  if (document.getElementById("score-form").classList.contains("is-locked")) return;
   const btn = document.getElementById("score-submit");
   const msg = document.getElementById("score-msg");
   msg.className = "msg"; msg.textContent = "";
