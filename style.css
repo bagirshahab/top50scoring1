@@ -518,7 +518,8 @@ th small { display: block; font-size: 10px; color: var(--muted-2); letter-spacin
 .proj-frame iframe { flex: 1; width: 100%; border: 0; background: #fff; }
 .proj-note { padding: 8px 14px; font-size: 12px; color: var(--muted); background: var(--bg-dark-2); border-top: 1px solid var(--border); }
 .pane-score { padding: 18px 20px 0; }
-.pane-score form { max-width: 720px; margin: 0 auto; }
+.pane-score form { max-width: none; }
+.pane-score .score-status, .pane-score .crit, .pane-score .field { max-width: 720px; margin-left: auto; margin-right: auto; }
 .score-status { min-height: 28px; margin-bottom: 12px; }
 
 /* Criterion block */
@@ -548,7 +549,24 @@ input[type="range"]::-moz-range-thumb { width: 26px; height: 26px; border-radius
 .tag-high { background: #0E9F6E; }
 .tag-low { background: #C2410C; }
 
-.submit-bar { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 0 max(14px, env(safe-area-inset-bottom)); background: linear-gradient(180deg, transparent, var(--bg-dark) 30%); }
+.submit-bar {
+  position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  margin: 0 -20px; padding: 14px max(20px, calc((100% - 720px) / 2 + 20px)) max(14px, env(safe-area-inset-bottom));
+  background: var(--bg-dark-2); border-top: 1px solid var(--border);
+  box-shadow: 0 -12px 24px -14px rgba(0, 0, 0, 0.55);
+}
+:root[data-theme="light"] .submit-bar { box-shadow: 0 -10px 22px -14px rgba(15, 23, 42, 0.3); }
+
+/* "N more criteria below" pill, floating just above the Submit bar */
+.scroll-hint {
+  position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, -10px);
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--cyan);
+  background: var(--card); color: var(--cyan); font: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+  box-shadow: var(--shadow-sm); white-space: nowrap; animation: hint-bob 1.6s ease-in-out infinite;
+}
+.scroll-hint:hover { background: var(--cyan); color: #04222b; }
+@keyframes hint-bob { 0%, 100% { transform: translate(-50%, -10px); } 50% { transform: translate(-50%, -6px); } }
+@media (prefers-reduced-motion: reduce) { .scroll-hint { animation: none; } }
 .submit-bar .msg { flex: 1; margin: 0; }
 .submit-bar .btn { flex: 0 0 auto; min-width: 190px; }
 

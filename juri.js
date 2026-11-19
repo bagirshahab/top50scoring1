@@ -4,7 +4,9 @@
 const judge = guard("judge");
 if (judge) document.getElementById("who-name").textContent = judge.name || judge.username;
 
-const DEFAULT_SCORE = 50;
+// Every criterion starts at the minimum. A judge who presses Submit by accident
+// gets 1s, not a misleading mid-range score.
+const DEFAULT_SCORE = 1;
 let WORKS = [];
 let SCORES = new Map(); // work_id -> weighted score this judge already saved
 let currentWorkId = null;
@@ -197,6 +199,7 @@ function setPane(name) {
   document.getElementById("pane-score").hidden = !wide && name !== "score";
   document.getElementById("pane-project").hidden = !wide && name !== "project";
   if (!wide && name === "project") ensureFrame();
+  requestAnimationFrame(updateScrollHint);
 }
 
 // Fallback project: the website could not be published, so show the video / screenshot instead.
@@ -267,9 +270,11 @@ async function openScore(workId) {
   document.getElementById("score-modal").hidden = false;
   document.body.classList.add("no-scroll");
   document.querySelector(".sheet-body").scrollTop = 0;
+  formSnapshot = formState();
   setPane("score");
   if (WIDE.matches) ensureFrame();
   recalcTotal();
+  requestAnimationFrame(updateScrollHint);
 
   try {
     const data = await apiFetch(`/api/scores?work_id=${encodeURIComponent(workId)}`);
@@ -283,6 +288,9 @@ async function openScore(workId) {
     }
   } catch { /* keep defaults */ }
 
+  // What the server (or the defaults) holds. Restoring a local draft below counts as an edit.
+  formSnapshot = formState();
+
   const draft = loadDraft(workId);
   if (draft && currentWorkId === workId) {
     CRITERIA.forEach((p) => {
@@ -294,9 +302,62 @@ async function openScore(workId) {
       `<span class="chip pending">${icon("status-warning")} Unsaved scores restored. Press Submit to save.</span>`;
   }
   recalcTotal();
+  updateScrollHint();
 }
 
+// ---------- Leaving the scoring sheet ----------
+// Snapshot of the form as loaded from the server (or the defaults), used to detect edits.
+let formSnapshot = "";
+function formState() {
+  return JSON.stringify([
+    CRITERIA.map((p) => parseInt(document.getElementById("num-" + p.key).value, 10)),
+    document.getElementById("score-comment").value.trim(),
+  ]);
+}
+const isDirty = () => formState() !== formSnapshot;
+
+// Back button / Esc / backdrop: ask first when nothing has been submitted yet or edits would be lost.
+async function requestClose() {
+  if (!currentWorkId) return;
+  const submitted = SCORES.has(currentWorkId);
+  if (submitted && !isDirty()) { closeScore(); return; }
+
+  const ok = await askConfirm({
+    title: submitted ? "Discard your changes?" : "No score given yet",
+    message: submitted
+      ? "You have unsaved changes to this score. Are you sure you want to go back to the main menu?"
+      : "You have not submitted a score for this project. Are you sure you want to go back to the main menu?",
+    confirmText: "Yes, go back",
+    cancelText: "Stay and score",
+  });
+  if (ok) closeScore();
+}
+
+// ---------- "More criteria below" hint ----------
+// The Submit bar is pinned to the bottom, so criteria further down can be hidden behind it.
+function updateScrollHint() {
+  const hint = document.getElementById("scroll-hint");
+  const pane = document.getElementById("pane-score");
+  const bar = document.querySelector(".submit-bar");
+  if (!hint || !pane || !bar || pane.hidden || !currentWorkId) { if (hint) hint.hidden = true; return; }
+  const limit = pane.getBoundingClientRect().bottom - bar.offsetHeight;
+  const below = [...pane.querySelectorAll(".crit")].filter((c) => c.getBoundingClientRect().bottom > limit + 2).length;
+  hint.hidden = below === 0;
+  if (below > 0) {
+    document.getElementById("scroll-hint-text").textContent =
+      below === 1 ? "1 more criterion below" : `${below} more criteria below`;
+  }
+}
+document.getElementById("pane-score").addEventListener("scroll", updateScrollHint, { passive: true });
+document.getElementById("pane-score").addEventListener("toggle", updateScrollHint, true); // scoring guide opened/closed
+window.addEventListener("resize", updateScrollHint);
+document.getElementById("scroll-hint").addEventListener("click", () => {
+  const pane = document.getElementById("pane-score");
+  pane.scrollBy({ top: Math.round(pane.clientHeight * 0.7), behavior: "smooth" });
+});
+
 function closeScore() {
+  document.getElementById("scroll-hint").hidden = true;
   document.getElementById("score-modal").hidden = true;
   document.body.classList.remove("no-scroll");
   const f = document.getElementById("score-frame");
@@ -351,7 +412,7 @@ document.getElementById("score-form").addEventListener("submit", async (e) => {
   }
 });
 
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && currentWorkId) closeScore(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && currentWorkId) requestClose(); });
 
 buildParams();
 loadWorks();

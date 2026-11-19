@@ -50,7 +50,7 @@
   <!-- Scoring sheet (full screen on tablets) -->
   <div id="score-modal" class="sheet" hidden>
     <div class="sheet-bar">
-      <button class="btn btn-ghost sheet-back" onclick="closeScore()"><i data-icon="arrow-left"></i> Back</button>
+      <button class="btn btn-ghost sheet-back" onclick="requestClose()"><i data-icon="arrow-left"></i> Back</button>
       <div class="sheet-title">
         <span class="order-badge" id="score-order">#1</span>
         <div>
@@ -104,6 +104,9 @@
           </div>
 
           <div class="submit-bar">
+            <button type="button" class="scroll-hint" id="scroll-hint" hidden>
+              <span id="scroll-hint-text">More criteria below</span><i data-icon="angle-down"></i>
+            </button>
             <div id="score-msg" class="msg"></div>
             <button type="submit" class="btn btn-primary btn-lg" id="score-submit">Submit Score</button>
           </div>

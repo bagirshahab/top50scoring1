@@ -61,6 +61,46 @@ function confirmLogout() {
   overlay.hidden = false;
 }
 
+// ---- Generic confirmation dialog ----
+// await askConfirm({ title, message, confirmText, cancelText }) -> true when confirmed.
+// Esc or the cancel button resolves false. Focus starts on the cancel button (the safe choice).
+function askConfirm({ title, message, confirmText = "Yes", cancelText = "Cancel", iconName = "status-warning" } = {}) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className = "modal";
+    overlay.style.zIndex = "400";
+    overlay.setAttribute("role", "alertdialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-label", title || "Confirm");
+    overlay.innerHTML = `
+      <div class="modal-backdrop" data-no></div>
+      <div class="confirm-card">
+        <div class="confirm-ic">${icon(iconName)}</div>
+        <h3>${esc(title)}</h3>
+        <p>${esc(message)}</p>
+        <div class="confirm-actions">
+          <button type="button" class="btn btn-ghost" data-no>${esc(cancelText)}</button>
+          <button type="button" class="btn btn-primary" data-yes>${esc(confirmText)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const finish = (answer) => {
+      document.removeEventListener("keydown", onKey, true);
+      overlay.remove();
+      resolve(answer);
+    };
+    // Capture phase + stopImmediatePropagation so Esc closes only this dialog, not the page behind it.
+    const onKey = (e) => {
+      if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); finish(false); }
+    };
+    document.addEventListener("keydown", onKey, true);
+    overlay.querySelectorAll("[data-no]").forEach((el) => el.addEventListener("click", () => finish(false)));
+    overlay.querySelector("[data-yes]").addEventListener("click", () => finish(true));
+    overlay.querySelector(".btn[data-no]").focus();
+  });
+}
+
 // ---- Fetch with automatic Authorization header ----
 async function apiFetch(path, options = {}) {
   const opts = { ...options };
