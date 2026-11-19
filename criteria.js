@@ -46,6 +46,6 @@ const JUDGING_CLOSE_AT = new Date("2026-12-31T23:59:00+07:00").getTime();
 function fmtOpenTime(t) {
   var d = new Date(t);
   var date = d.toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "long", month: "long", day: "numeric", year: "numeric" });
-  var time = d.toLocaleTimeString("en-US", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit", hour12: true });
-  return date + ", " + time + " (Bangkok time)";
+  var time = d.toLocaleTimeString("en-US", { timeZone: "Asia/Bangkok", hour: "2-digit", hour12: true });
+  return date + ", " + time;
 }

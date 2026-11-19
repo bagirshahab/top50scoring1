@@ -89,12 +89,12 @@ export function judgingState(now = Date.now()) {
   return "open";
 }
 
-// e.g. "Sunday, November 22, 2026, 8:00 AM (Bangkok time)"
+// e.g. "Sunday, November 22, 2026, 08 AM"
 export function fmtWindow(t) {
   const d = new Date(t);
   const date = d.toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", weekday: "long", year: "numeric", month: "long", day: "numeric" });
-  const time = d.toLocaleTimeString("en-US", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit", hour12: true });
-  return `${date}, ${time} (Bangkok time)`;
+  const time = d.toLocaleTimeString("en-US", { timeZone: "Asia/Bangkok", hour: "2-digit", hour12: true });
+  return `${date}, ${time}`;
 }
 
 export function judgingBlockMessage(state) {
