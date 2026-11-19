@@ -4,9 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Admin Dashboard — AI For All Demo Day</title>
+  <title>Admin dashboard | AI For All Hackathon Demo Day</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="icons.js"></script>
   <script src="theme.js"></script>
 </head>
@@ -14,19 +16,19 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <span class="brand-text"><b>AI FOR ALL HACKATHON</b><span class="brand-sub">DEMO DAY · ADMIN DASHBOARD</span></span>
+      <span class="brand-text"><b>AI FOR ALL HACKATHON</b><span class="brand-sub">DEMO DAY &middot; ADMIN DASHBOARD</span></span>
     </div>
     <div class="topbar-right">
-      <span class="who hide-sm">Hi, <b id="who-name">Admin</b></span>
+      <span class="who hide-sm">Signed in as <b id="who-name">Admin</b></span>
       <span class="badge-role admin">Admin</span>
-      <button class="btn btn-ghost btn-sm" onclick="confirmLogout()">Sign Out</button>
+      <button class="btn btn-ghost btn-sm" onclick="confirmLogout()"><i data-icon="sign-out"></i> Sign out</button>
     </div>
   </header>
 
   <main class="wrap">
     <div class="page-head">
-      <span class="eyebrow">Round 2 · Top 20 → Top 5</span>
-      <h1>Admin Dashboard</h1>
+      <span class="eyebrow">Round 2 &middot; Top 20 &rarr; Top 5</span>
+      <h1>Admin dashboard</h1>
       <p>Add the 20 project links, set their presentation order, create judge accounts, and follow the live ranking.</p>
     </div>
 
@@ -34,7 +36,7 @@
       <div class="stat"><div class="stat-num" id="stat-works">0</div><div class="stat-label">Projects (max 20)</div></div>
       <div class="stat"><div class="stat-num" id="stat-judges">0</div><div class="stat-label">Judges</div></div>
       <div class="stat"><div class="stat-num" id="stat-scored">0</div><div class="stat-label">Scores submitted</div></div>
-      <div class="stat"><div class="stat-num" id="stat-top">—</div><div class="stat-label">Current #1</div></div>
+      <div class="stat"><div class="stat-num stat-text" id="stat-top">-</div><div class="stat-label">Current #1</div></div>
     </section>
 
     <div class="tabs" role="tablist">
@@ -49,7 +51,7 @@
         <div class="card-top">
           <div>
             <h2>Live Ranking</h2>
-            <p class="card-desc">Average weighted score (0–100) across judges. The top 5 advance. Tap a row for the per-judge breakdown.</p>
+            <p class="card-desc">Average weighted score (0&ndash;100) across judges. The top 5 advance. Select a row for the per-judge breakdown.</p>
           </div>
           <div class="card-actions">
             <button class="btn btn-ghost btn-sm" onclick="loadRanking()"><i data-icon="refresh"></i> Refresh</button>
@@ -64,7 +66,7 @@
                 <th>Project / Team</th>
                 <th style="width:90px">Order</th>
                 <th style="width:90px">Judges</th>
-                <th style="width:120px">Score</th>
+                <th style="width:260px">Score</th>
               </tr>
             </thead>
             <tbody id="ranking-body">

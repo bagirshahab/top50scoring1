@@ -4,67 +4,84 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Login — AI For All Demo Day Judging</title>
+  <title>Sign in | AI For All Hackathon Demo Day Judging</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="icons.js"></script>
   <script src="theme.js"></script>
 </head>
 
 <body>
-  <div class="login-shell">
-    <div class="login-card">
-      <div class="login-logo">
-        <span class="logo-wordmark">AI for All Hackathon</span>
+  <div class="auth-shell">
+    <!-- Brand panel: the event, and the rubric judges will score against -->
+    <aside class="auth-brand">
+      <div>
+        <span class="logo-wordmark">AI For All Hackathon</span>
+        <h1 class="auth-title">Demo Day Judging<span class="sub">Round 2 &middot; Top 20 &rarr; Top 5</span></h1>
       </div>
-      <h1>Demo Day Judging</h1>
-      <p class="login-sub">Round 2 · Top 20 → Top 5</p>
+      <section class="auth-criteria" aria-labelledby="crit-h">
+        <h2 id="crit-h">Scored on five criteria, weighted to 100</h2>
+        <div class="weights" id="weights" aria-hidden="true"></div>
+        <ul class="weights-list" id="weights-list"></ul>
+      </section>
+    </aside>
 
-      <!-- Notice shown while judging is outside its window -->
-      <div id="pre-open-notice" class="pre-open-notice" hidden>
-        <i data-icon="status-in-progress"></i> Judging has not opened yet. Judge sign-in will unlock when judging opens.
-      </div>
-      <div id="closed-notice" class="pre-open-notice closed" hidden>
-        <i data-icon="lock-private"></i> Judging has closed. Judge sign-in is no longer available.
-      </div>
+    <main class="auth-panel">
+      <div class="auth-card">
+        <h2 class="auth-heading">Sign in</h2>
+        <p class="login-sub">Use the account the organizers gave you.</p>
 
-      <!-- Role selection -->
-      <div class="role-switch" role="tablist">
-        <button type="button" id="role-judge" class="active" onclick="setRole('judge')"><i data-icon="user-profile"></i> Judge</button>
-        <button type="button" id="role-admin" onclick="setRole('admin')"><i data-icon="settings"></i> Admin</button>
-      </div>
-
-      <form id="login-form" novalidate>
-        <div class="field">
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" placeholder="enter your username" autocomplete="username" required />
+        <!-- Notices shown while judging is outside its window -->
+        <div id="pre-open-notice" class="pre-open-notice" hidden>
+          <i data-icon="status-in-progress"></i>
+          <span>Judging has not opened yet. Judge sign-in will unlock when judging opens.</span>
         </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <div class="pw-wrap">
-            <input type="password" id="password" name="password" placeholder="enter your password" autocomplete="current-password" required />
-            <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i data-icon="eye"></i></button>
+        <div id="closed-notice" class="pre-open-notice closed" hidden>
+          <i data-icon="lock-private"></i>
+          <span>Judging has closed. Judge sign-in is no longer available.</span>
+        </div>
+
+        <div class="role-switch" role="group" aria-label="Sign in as">
+          <button type="button" id="role-judge" class="active" onclick="setRole('judge')"><i data-icon="user-profile"></i> Judge</button>
+          <button type="button" id="role-admin" onclick="setRole('admin')"><i data-icon="settings"></i> Admin</button>
+        </div>
+
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Enter your username" autocomplete="username" autocapitalize="off" autocorrect="off" required />
           </div>
-        </div>
-        <label class="check-row remember-row">
-          <input type="checkbox" id="remember" checked />
-          <span>Remember my login on this browser</span>
-        </label>
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required />
+              <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Show password" aria-pressed="false" title="Show password"><i data-icon="eye"></i></button>
+            </div>
+          </div>
+          <label class="check-row remember-row">
+            <input type="checkbox" id="remember" checked />
+            <span>Remember my login on this browser</span>
+          </label>
+          <button type="submit" class="btn btn-primary btn-lg btn-block" id="login-btn">
+            <span id="login-btn-text">Sign in</span>
+          </button>
+          <div id="login-msg" class="msg" role="status" aria-live="polite"></div>
+        </form>
 
-        <button type="submit" class="btn btn-primary btn-block" id="login-btn">
-          <span id="login-btn-text">Sign In</span>
-        </button>
-        <div id="login-msg" class="msg" role="status" aria-live="polite"></div>
-      </form>
-
-      <p class="login-foot">
-        Judge accounts are created by the admin. Contact the committee if you lost your credentials.
-      </p>
-    </div>
+        <p class="login-foot">Judge accounts are created by the admin. Contact the committee if you lost your credentials.</p>
+      </div>
+    </main>
   </div>
 
+  <script src="criteria.js"></script>
   <script src="app.js"></script>
   <script>
+    // Rubric panel, built from the same CRITERIA list the scoring screen uses.
+    document.getElementById('weights').innerHTML = CRITERIA.map((c) => `<i style="flex:${c.weight}"></i>`).join('');
+    document.getElementById('weights-list').innerHTML = CRITERIA.map((c) => `<li><span>${esc(c.name)}</span><b>${c.weight}%</b></li>`).join('');
+
     // Judging window (UTC+7 / WIB). Keep in sync with index.html and the server env vars.
     const OPEN_AT  = new Date('2026-11-06T00:00:00+07:00').getTime();
     const CLOSE_AT = new Date('2026-12-31T23:59:00+07:00').getTime();
@@ -73,15 +90,13 @@
     const AFTER_CLOSE = now >= CLOSE_AT;
     const JUDGING_OPEN = !BEFORE_OPEN && !AFTER_CLOSE;
 
-    // Once judging has closed, this page is no longer useful to judges — send them
-    // to the landing page which shows the "Judging Closed" notice. Admins can still
-    // reach /login directly via ?admin=1 if they need to review.
+    // Once judging has closed, judges are sent to the landing page, which shows the "Judging closed" notice.
+    // Admins can still reach /login directly via ?admin=1.
     if (AFTER_CLOSE && !/[?&]admin=1/.test(location.search)) {
       location.replace('/');
     }
 
-    // Outside the judging window, judge login is disabled here AND on the server.
-    // Admins can still sign in. Default the role switch to Admin in that case.
+    // Outside the judging window, judge login is disabled here and on the server. Default to Admin then.
     let currentRole = JUDGING_OPEN ? 'judge' : 'admin';
 
     function setRole(role) {
@@ -99,13 +114,14 @@
       document.getElementById('login-msg').className = 'msg';
     }
 
-    // Apply gate UI (default to Admin, flag Judge as locked, show the matching notice)
+    // Gate UI: flag Judge as locked and show the matching notice
     (function applyGateUI() {
       if (!JUDGING_OPEN) {
         document.getElementById(AFTER_CLOSE ? 'closed-notice' : 'pre-open-notice').hidden = false;
         const judgeBtn = document.getElementById('role-judge');
         judgeBtn.classList.remove('active');
         judgeBtn.classList.add('locked');
+        judgeBtn.setAttribute('aria-disabled', 'true');
         judgeBtn.innerHTML = icon('lock-private') + ' Judge';
         document.getElementById('role-admin').classList.add('active');
       }
@@ -139,7 +155,7 @@
       } catch { /* ignore corrupt value */ }
     })();
 
-    // If already logged in, redirect to the matching dashboard
+    // If already logged in, go straight to the matching dashboard
     (function redirectIfLoggedIn() {
       const sess = Auth.get();
       if (sess?.user?.role === 'admin') location.href = '/admin';
@@ -163,7 +179,7 @@
       }
 
       btn.disabled = true;
-      txt.textContent = 'Processing...';
+      txt.textContent = 'Signing in...';
       try {
         const res = await fetch(API('/api/login'), {
           method: 'POST',
@@ -171,7 +187,7 @@
           body: JSON.stringify({ role: currentRole, username, password }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Login failed.');
+        if (!res.ok) throw new Error(data.error || 'Sign-in failed.');
 
         const remember = document.getElementById('remember').checked;
         try {
@@ -184,7 +200,7 @@
         msg.textContent = err.message;
         msg.className = 'msg error';
         btn.disabled = false;
-        txt.textContent = 'Sign In';
+        txt.textContent = 'Sign in';
       }
     });
   </script>

@@ -21,7 +21,10 @@ function buildParams() {
       <div class="crit-head">
         <div class="crit-name">
           <span class="crit-title">${esc(p.name)}</span>
-          <span class="weight-badge">${p.weight}%</span>
+          <span class="crit-meta">
+            <span class="weight-badge">${p.weight}%</span>
+            <span class="crit-pts">Adds <b id="pts-${p.key}">0.00</b> of ${p.weight}</span>
+          </span>
         </div>
         <div class="stepper">
           <button type="button" class="step-btn" data-step="-1" data-key="${p.key}" aria-label="Decrease ${esc(p.name)}">−</button>
@@ -31,6 +34,7 @@ function buildParams() {
         </div>
       </div>
       <input type="range" class="crit-range" id="rng-${p.key}" min="1" max="100" value="${DEFAULT_SCORE}" aria-label="${esc(p.name)} slider" />
+      <div class="crit-scale" aria-hidden="true"><span>1</span><span>50</span><span>100</span></div>
       <details class="crit-guide">
         <summary>Scoring guide</summary>
         <p class="cg-desc">${esc(p.desc)}</p>
@@ -76,9 +80,18 @@ function recalcTotal() {
   CRITERIA.forEach((p) => {
     let v = parseInt(document.getElementById("num-" + p.key).value, 10);
     if (isNaN(v)) v = 0;
-    sum += Math.min(100, Math.max(0, v)) * p.weight;
+    v = Math.min(100, Math.max(0, v));
+    sum += v * p.weight;
+    document.getElementById("pts-" + p.key).textContent = ((v * p.weight) / 100).toFixed(2);
+    paintRange(document.getElementById("rng-" + p.key));
   });
   document.getElementById("score-total-val").textContent = (sum / 100).toFixed(2);
+}
+
+// Filled part of the slider track (CSS reads --p).
+function paintRange(rng) {
+  const min = Number(rng.min) || 1, max = Number(rng.max) || 100;
+  rng.style.setProperty("--p", ((Number(rng.value) - min) / (max - min)) * 100 + "%");
 }
 
 function setParamValue(key, v) {
@@ -155,7 +168,10 @@ function updateStats() {
   document.getElementById("stat-done").textContent = done;
   document.getElementById("stat-left").textContent = Math.max(0, total - done);
   document.getElementById("progress-pct").textContent = pct + "%";
-  document.getElementById("progress-fill").style.width = pct + "%";
+  const rail = document.getElementById("progress-rail");
+  rail.setAttribute("aria-valuenow", String(pct));
+  rail.setAttribute("aria-valuetext", done + " of " + total + " projects scored");
+  rail.innerHTML = WORKS.map((w) => '<i class="' + (SCORES.has(w.id) ? "done" : "") + '"></i>').join("");
 }
 
 function renderList() {
@@ -226,7 +242,7 @@ function applyFallback(work) {
     shotLink.href = work.screenshot_url;
     document.getElementById("pf-shot").src = work.screenshot_url;
   } else {
-    document.getElementById("pf-shot").removeAttribute("src");
+    document.getElementById("pf-shot").src = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
   }
   document.getElementById("pf-empty").hidden = !!(work.video_url || work.screenshot_url);
 }

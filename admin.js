@@ -31,7 +31,7 @@ async function loadRanking() {
     document.getElementById("stat-judges").textContent = data.stats.totalJudges;
     document.getElementById("stat-scored").textContent = DETAILS.length;
     const top = RANKING.find((r) => Number(r.judge_count) > 0);
-    document.getElementById("stat-top").textContent = top ? top.project_title : "—";
+    document.getElementById("stat-top").textContent = top ? top.project_title : "-";
 
     if (!RANKING.length) {
       body.innerHTML = `<tr><td colspan="5" class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet. Add them in the "Projects &amp; Order" tab.</td></tr>`;
@@ -43,7 +43,7 @@ async function loadRanking() {
       const rankCls = rank <= 3 ? `rank-${rank}` : "";
       const hasScore = Number(r.judge_count) > 0;
       const cut = rank === TOP_N && RANKING.length > TOP_N
-        ? `<tr class="cut-row"><td colspan="5">Top ${TOP_N} advance · cut line</td></tr>` : "";
+        ? `<tr class="cut-row"><td colspan="5">Top ${TOP_N} advance above this line</td></tr>` : "";
       return `
         <tr class="clickable ${rank <= TOP_N && hasScore ? "in-top" : ""}" onclick="openDetail('${esc(r.id)}')">
           <td><span class="rank-badge ${rankCls}">${rank}</span></td>
@@ -53,7 +53,7 @@ async function loadRanking() {
           </td>
           <td><span class="order-badge sm">${r.position || "–"}</span></td>
           <td>${hasScore ? `<span class="chip done">${r.judge_count}</span>` : `<span class="chip pending">none</span>`}</td>
-          <td><span class="score-cell">${hasScore ? Number(r.avg_weighted).toFixed(2) : "—"}</span></td>
+          <td>${hasScore ? `<div class="meter"><span class="meter-track" aria-hidden="true"><span class="meter-fill" style="width:${Math.max(0, Math.min(100, Number(r.avg_weighted)))}%"></span></span><span class="score-cell">${Number(r.avg_weighted).toFixed(2)}</span></div>` : `<span class="t-mute">Not scored</span>`}</td>
         </tr>${cut}`;
     }).join("");
   } catch (err) {
