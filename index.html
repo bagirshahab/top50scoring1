@@ -16,17 +16,7 @@
 
 <body>
   <div class="auth-shell">
-    <aside class="auth-brand">
-      <div>
-        <span class="logo-wordmark">AI For All Hackathon</span>
-        <h1 class="auth-title">Demo Day Judging<span class="sub">Round 2 &middot; Top 20 &rarr; Top 5</span></h1>
-      </div>
-      <section class="auth-criteria" aria-labelledby="crit-h">
-        <h2 id="crit-h">Scored on five criteria, weighted to 100</h2>
-        <div class="weights" id="weights" aria-hidden="true"></div>
-        <ul class="weights-list" id="weights-list"></ul>
-      </section>
-    </aside>
+    <aside class="auth-brand" id="brand-panel"></aside>
 
     <main class="auth-panel">
       <div class="auth-card">
@@ -61,9 +51,8 @@
 
   <script src="criteria.js"></script>
   <script src="app.js"></script>
+  <script src="brand.js"></script>
   <script>
-    document.getElementById('weights').innerHTML = CRITERIA.map((c) => `<i style="flex:${c.weight}"></i>`).join('');
-    document.getElementById('weights-list').innerHTML = CRITERIA.map((c) => `<li><span>${esc(c.name)}</span><b>${c.weight}%</b></li>`).join('');
 
     // Judging window (UTC+7 / WIB). Keep in sync with login.html and the server env vars.
     const OPEN_AT  = new Date('2026-11-06T00:00:00+07:00').getTime();
