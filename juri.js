@@ -154,14 +154,14 @@ function youtubeEmbed(url) {
   } catch { return null; }
 }
 
-// ---------- List: table view with filter and sort ----------
-// The judge's last filter/sort is remembered on this device.
+// ---------- List: table view with sorting ----------
+// The judge's last sort is remembered on this device.
 const VIEW_KEY = `pjt_list_view_${judge ? judge.id : "x"}`;
-let VIEW = { sort: "status", dir: "asc", filter: "all" }; // default: not scored first
+let VIEW = { sort: "status", dir: "asc" }; // default: not scored first
 try {
   const v = JSON.parse(localStorage.getItem(VIEW_KEY) || "null");
   if (v && ["project", "status", "score"].includes(v.sort)) { // a saved "order" sort from an earlier version falls back to the default
-    VIEW = { sort: v.sort, dir: v.dir === "desc" ? "desc" : "asc", filter: ["all", "todo", "done"].includes(v.filter) ? v.filter : "all" };
+    VIEW = { sort: v.sort, dir: v.dir === "desc" ? "desc" : "asc" };
   }
 } catch { /* ignore a corrupt saved view */ }
 function saveView() { try { localStorage.setItem(VIEW_KEY, JSON.stringify(VIEW)); } catch { /* blocked */ } }
@@ -170,7 +170,7 @@ const isScored = (w) => SCORES.has(w.id);
 const byOrder = (a, b) => (a.position || 0) - (b.position || 0);
 
 function visibleWorks() {
-  const list = WORKS.filter((w) => VIEW.filter === "all" || (VIEW.filter === "done") === isScored(w));
+  const list = WORKS.slice();
   const dir = VIEW.dir === "desc" ? -1 : 1;
   if (VIEW.sort === "score") {
     // Unscored projects always sit below the scored ones, in presentation order.
@@ -190,7 +190,6 @@ function setSort(key) {
   else { VIEW.sort = key; VIEW.dir = key === "score" ? "desc" : "asc"; }
   saveView(); renderList();
 }
-function setFilter(f) { VIEW.filter = f; saveView(); renderList(); }
 
 function statusHtml(w) {
   if (loadDraft(w.id)) return `<span class="chip pending">${icon("status-warning")} Unsaved draft</span>`;
@@ -209,9 +208,6 @@ function updateStats() {
   document.getElementById("stat-total").textContent = total;
   document.getElementById("stat-done").textContent = done;
   document.getElementById("stat-left").textContent = Math.max(0, total - done);
-  document.getElementById("n-all").textContent = total;
-  document.getElementById("n-done").textContent = done;
-  document.getElementById("n-todo").textContent = Math.max(0, total - done);
 }
 
 function renderList() {
@@ -219,10 +215,6 @@ function renderList() {
   updateStats();
 
   // controls reflect the current view
-  document.querySelectorAll("[data-filter]").forEach((b) => {
-    const on = b.dataset.filter === VIEW.filter;
-    b.classList.toggle("active", on); b.setAttribute("aria-pressed", String(on));
-  });
   document.querySelectorAll("th[data-col]").forEach((th) => {
     const on = th.dataset.col === VIEW.sort;
     th.setAttribute("aria-sort", on ? (VIEW.dir === "asc" ? "ascending" : "descending") : "none");
@@ -237,10 +229,6 @@ function renderList() {
     return;
   }
   const rows = visibleWorks();
-  if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="6" class="empty">${VIEW.filter === "todo" ? "You have scored every project." : "You have not scored any project yet."} <button type="button" class="link-btn" onclick="setFilter('all')">Show all projects</button></td></tr>`;
-    return;
-  }
   body.innerHTML = rows.map((w) => {
     const scored = isScored(w);
     const sub = teamSubline(w);
@@ -264,11 +252,10 @@ function renderList() {
   }).join("");
 }
 
-// A saved (or failed) score changes the row's status and its place in a filtered list.
+// A saved (or failed) score changes the row's status and its place in the sort order.
 function refreshRow() { renderList(); }
 
 // ---- list controls ----
-document.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => setFilter(b.dataset.filter)));
 document.querySelectorAll("th[data-col] .th-sort").forEach((b) => b.addEventListener("click", () => setSort(b.closest("th").dataset.col)));
 document.getElementById("sort-select").addEventListener("change", (e) => {
   const [sort, dir] = e.target.value.split("-");

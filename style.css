@@ -413,13 +413,7 @@ tr.avg-row td { background: var(--inset); font-weight: 700; border-top: 1px soli
 .order-badge { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 10px; font-size: 22px; font-weight: 700; background: var(--raised); border: 1px solid var(--line-strong); color: var(--text); }
 .order-badge.sm { width: 32px; height: 28px; font-size: 15px; border-radius: var(--r-sm); }
 .stats-3 { grid-template-columns: repeat(3, 1fr); max-width: 640px; }
-.list-tools { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
-.seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--inset); border: 1px solid var(--line); border-radius: 10px; }
-.seg-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border: none; border-radius: 7px; background: transparent; color: var(--muted); font-size: 14px; font-weight: 600; }
-.seg-btn:hover:not(.active) { color: var(--text); background: var(--hover); }
-.seg-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--line-strong); }
-.seg-n { min-width: 22px; padding: 0 6px; border-radius: 999px; text-align: center; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; background: var(--raised); color: var(--muted); }
-.seg-btn.active .seg-n { background: var(--cyan-soft); color: var(--cyan-text); }
+.list-tools { display: flex; align-items: center; justify-content: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
 .sort-select { display: inline-flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 600; color: var(--muted); }
 .sort-select select { width: auto; min-width: 220px; min-height: 44px; }
 
