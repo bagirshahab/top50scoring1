@@ -48,8 +48,8 @@ async function loadRanking() {
         <tr class="clickable ${rank <= TOP_N && hasScore ? "in-top" : ""}" onclick="openDetail('${esc(r.id)}')">
           <td><span class="rank-badge ${rankCls}">${rank}</span></td>
           <td>
-            <div class="cell-title">${r.team_number ? `<span class="team-no">T${r.team_number}</span> ` : ""}${esc(r.project_title)}${r.fallback ? ' <span class="bdg bdg-warn">Fallback</span>' : ""}</div>
-            <div class="cell-sub">${esc(r.team_name)}${r.category ? " · " + esc(r.category) : ""}</div>
+            <div class="cell-title">${showTeamNo(r) ? `<span class="team-no">T${r.team_number}</span> ` : ""}${esc(r.project_title)}${r.fallback ? ' <span class="bdg bdg-warn">Fallback</span>' : ""}</div>
+            <div class="cell-sub">${esc(teamSubline(r))}</div>
           </td>
           <td><span class="order-badge sm">${r.position || "–"}</span></td>
           <td>${hasScore ? `<span class="chip done">${r.judge_count}</span>` : `<span class="chip pending">none</span>`}</td>
@@ -143,8 +143,8 @@ function renderWorks() {
     <div class="order-item ${w.fallback ? "is-fallback" : ""}">
       <span class="order-badge">${i + 1}</span>
       <div class="oi-main">
-        <div class="cell-title">${w.team_number ? `<span class="team-no">T${w.team_number}</span> ` : ""}${esc(w.project_title)}</div>
-        <div class="cell-sub">${esc(w.team_name)}${w.category ? " · " + esc(w.category) : ""}</div>
+        <div class="cell-title">${showTeamNo(w) ? `<span class="team-no">T${w.team_number}</span> ` : ""}${esc(w.project_title)}</div>
+        <div class="cell-sub">${esc(teamSubline(w))}</div>
         <div class="bdg-row">
           ${linkBadge(w)}
           ${w.fallback ? '<span class="bdg bdg-warn">${icon("status-warning")} Fallback</span>' : ""}

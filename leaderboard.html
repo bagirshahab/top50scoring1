@@ -134,7 +134,7 @@
               <div class="podium-medal">${medals[idx]}</div>
               <div class="podium-rank">#${idx + 1}</div>
               <div class="podium-title">${esc(r.project_title)}</div>
-              <div class="podium-team">${esc(r.team_name)}</div>
+              <div class="podium-team">${esc(teamSubline(r))}</div>
               <div class="podium-score">${Number(r.avg_weighted).toFixed(2)}</div>
               <div class="podium-score-label">weighted score</div>
             </div>`;
@@ -152,8 +152,8 @@
           <tr class="${rank <= TOP_N && hasScore ? "in-top" : ""}">
             <td><span class="rank-badge ${rankCls}">${rank}</span></td>
             <td>
-              <div class="cell-title">${r.team_number ? `<span class="team-no">T${r.team_number}</span> ` : ""}${esc(r.project_title)}</div>
-              <div class="cell-sub">${esc(r.team_name)}${r.category ? " · " + esc(r.category) : ""}</div>
+              <div class="cell-title">${showTeamNo(r) ? `<span class="team-no">T${r.team_number}</span> ` : ""}${esc(r.project_title)}</div>
+              <div class="cell-sub">${esc(teamSubline(r))}</div>
             </td>
             <td>${hasScore ? `<span class="chip done">${r.judge_count}</span>` : `<span class="chip pending">—</span>`}</td>
             <td><span class="score-cell">${hasScore ? Number(r.avg_weighted).toFixed(2) : "—"}</span></td>

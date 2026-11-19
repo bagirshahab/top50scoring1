@@ -118,7 +118,7 @@ function hostOf(url) {
 
 function workBadges(w) {
   const b = [];
-  if (w.team_number) b.push(`<span class="bdg bdg-team">Team ${w.team_number}</span>`);
+  if (showTeamNo(w)) b.push(`<span class="bdg bdg-team">Team ${w.team_number}</span>`);
   if (w.bedrock_used === true) b.push(`<span class="bdg bdg-yes">${icon("status-positive")} Bedrock</span>`);
   if (w.bedrock_used === false) b.push(`<span class="bdg bdg-no">${icon("status-negative")} Bedrock</span>`);
   if (w.agentcore_used === true) b.push(`<span class="bdg bdg-yes">${icon("status-positive")} AgentCore</span>`);
@@ -170,7 +170,7 @@ function renderList() {
       <span class="order-badge">${w.position || i + 1}</span>
       <span class="wr-main">
         <span class="wr-title">${esc(w.project_title)}</span>
-        <span class="wr-team">${esc(w.team_name)}${w.category ? " · " + esc(w.category) : ""}</span>
+        <span class="wr-team">${esc(teamSubline(w))}</span>
         <span class="bdg-row">${workBadges(w)}</span>
         <span class="wr-host">${esc(hostOf(w.project_url))}</span>
       </span>
@@ -252,7 +252,7 @@ async function openScore(workId) {
 
   document.getElementById("score-order").textContent = "#" + (work.position || "");
   document.getElementById("score-title").textContent = work.project_title;
-  document.getElementById("score-team").textContent = work.team_name + (work.category ? " · " + work.category : "");
+  document.getElementById("score-team").textContent = teamSubline(work);
   document.getElementById("score-url").textContent = work.project_url;
   document.getElementById("score-badges").innerHTML = workBadges(work);
   applyFallback(work);
