@@ -69,7 +69,7 @@
     var el = document.getElementById("live-state");
     if (typeof JUDGING_OPEN_AT === "undefined" || typeof JUDGING_CLOSE_AT === "undefined") { el.innerHTML = ""; return; }
     var t = now.getTime(), html;
-    if (t < JUDGING_OPEN_AT) html = '<span class="bdg bdg-warn">' + ico("status-in-progress") + " Opens " + new Date(JUDGING_OPEN_AT).toLocaleString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric", hour: "2-digit", hour12: true }).replace(/,/g, "") + "</span>";
+    if (t < JUDGING_OPEN_AT) html = '<span class="bdg bdg-warn">' + ico("status-in-progress") + " Opens " + new Date(JUDGING_OPEN_AT).toLocaleString("en-US", { timeZone: "Asia/Bangkok", weekday: "short", month: "short", day: "numeric", hour: "2-digit", hour12: true }) + "</span>";
     else if (t >= JUDGING_CLOSE_AT) html = '<span class="bdg bdg-bad">' + ico("lock-private") + " Judging closed</span>";
     else html = '<span class="bdg bdg-ok">' + ico("status-positive") + " Judging is open</span>";
     if (el.dataset.k !== html) { el.innerHTML = html; el.dataset.k = html; }
