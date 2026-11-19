@@ -32,23 +32,51 @@
       <p>Open a project to see its live prototype and submit your scores. You can change a score while judging is open.</p>
     </div>
 
-    <!-- Progress: one segment per project, filled once you have scored it -->
-    <section class="cue-rail-card" aria-label="Your progress">
-      <div class="cue-rail-top">
-        <div class="progress-stats">
-          <div><b id="stat-done">0</b><span>Scored</span></div>
-          <div><b id="stat-left">0</b><span>Remaining</span></div>
-          <div><b id="stat-total">0</b><span>Total</span></div>
-        </div>
-        <div class="progress-pct" id="progress-pct" aria-hidden="true">0%</div>
-      </div>
-      <div class="cue-rail" id="progress-rail" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Projects scored"></div>
+    <section class="stats stats-3" aria-label="Your progress">
+      <div class="stat"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Scored</div></div>
+      <div class="stat"><div class="stat-num" id="stat-left">0</div><div class="stat-label">Not scored yet</div></div>
+      <div class="stat"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total projects</div></div>
     </section>
 
-    <section id="work-list" class="work-list" aria-label="Projects">
-      <div class="empty"><div class="empty-ic"><i data-icon="status-in-progress" data-size="big"></i></div>Loading projects...</div>
+    <section class="list-tools" aria-label="Filter and sort">
+      <div class="seg" role="group" aria-label="Show">
+        <button type="button" class="seg-btn active" data-filter="all" aria-pressed="true">All <span class="seg-n" id="n-all">0</span></button>
+        <button type="button" class="seg-btn" data-filter="todo" aria-pressed="false">Not scored <span class="seg-n" id="n-todo">0</span></button>
+        <button type="button" class="seg-btn" data-filter="done" aria-pressed="false">Scored <span class="seg-n" id="n-done">0</span></button>
+      </div>
+      <label class="sort-select">
+        <span>Sort by</span>
+        <select id="sort-select">
+          <option value="order-asc">Presentation order</option>
+          <option value="order-desc">Presentation order (reverse)</option>
+          <option value="status-asc">Not scored first</option>
+          <option value="status-desc">Scored first</option>
+          <option value="score-desc">Score, high to low</option>
+          <option value="score-asc">Score, low to high</option>
+          <option value="project-asc">Project name A to Z</option>
+          <option value="project-desc">Project name Z to A</option>
+        </select>
+      </label>
     </section>
-  </main>
+
+    <div class="table-wrap">
+      <table class="work-table">
+        <caption class="sr-only">Projects in presentation order, with your scoring status</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="c-order" data-col="order" aria-sort="ascending"><button type="button" class="th-sort" title="Sort by presentation order">No.<span class="th-ic"></span></button></th>
+            <th scope="col" data-col="project" aria-sort="none"><button type="button" class="th-sort" title="Sort by project name">Project<span class="th-ic"></span></button></th>
+            <th scope="col" class="c-tech">Tech</th>
+            <th scope="col" data-col="status" aria-sort="none"><button type="button" class="th-sort" title="Sort by status">Status<span class="th-ic"></span></button></th>
+            <th scope="col" class="c-score" data-col="score" aria-sort="none"><button type="button" class="th-sort" title="Sort by score">Score<span class="th-ic"></span></button></th>
+            <th scope="col" class="c-act"><span class="sr-only">Action</span></th>
+          </tr>
+        </thead>
+        <tbody id="work-list">
+          <tr><td colspan="6" class="empty"><div class="empty-ic"><i data-icon="status-in-progress" data-size="big"></i></div>Loading projects...</td></tr>
+        </tbody>
+      </table>
+    </div>  </main>
 
   <!-- Scoring sheet (full screen) -->
   <div id="score-modal" class="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="score-title">

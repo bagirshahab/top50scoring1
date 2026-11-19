@@ -121,7 +121,7 @@ async function loadWorks() {
     SCORES = new Map((myScores.scored || []).map((s) => [s.work_id, s.weighted]));
     renderList();
   } catch (err) {
-    list.innerHTML = `<div class="empty">${esc(err.message)}</div>`;
+    list.innerHTML = `<tr><td colspan="6" class="empty">${esc(err.message)} <button type="button" class="link-btn" onclick="loadWorks()">Try again</button></td></tr>`;
   }
 }
 
@@ -154,59 +154,126 @@ function youtubeEmbed(url) {
   } catch { return null; }
 }
 
+// ---------- List: table view with filter and sort ----------
+// The judge's last filter/sort is remembered on this device.
+const VIEW_KEY = `pjt_list_view_${judge ? judge.id : "x"}`;
+let VIEW = { sort: "order", dir: "asc", filter: "all" };
+try {
+  const v = JSON.parse(localStorage.getItem(VIEW_KEY) || "null");
+  if (v && ["order", "project", "status", "score"].includes(v.sort)) {
+    VIEW = { sort: v.sort, dir: v.dir === "desc" ? "desc" : "asc", filter: ["all", "todo", "done"].includes(v.filter) ? v.filter : "all" };
+  }
+} catch { /* ignore a corrupt saved view */ }
+function saveView() { try { localStorage.setItem(VIEW_KEY, JSON.stringify(VIEW)); } catch { /* blocked */ } }
+
+const isScored = (w) => SCORES.has(w.id);
+const byOrder = (a, b) => (a.position || 0) - (b.position || 0);
+
+function visibleWorks() {
+  const list = WORKS.filter((w) => VIEW.filter === "all" || (VIEW.filter === "done") === isScored(w));
+  const dir = VIEW.dir === "desc" ? -1 : 1;
+  if (VIEW.sort === "score") {
+    // Unscored projects always sit below the scored ones, in presentation order.
+    const scored = list.filter(isScored).sort((a, b) => dir * (Number(SCORES.get(a.id)) - Number(SCORES.get(b.id))) || byOrder(a, b));
+    return scored.concat(list.filter((w) => !isScored(w)).sort(byOrder));
+  }
+  const cmp = {
+    order: byOrder,
+    project: (a, b) => a.project_title.localeCompare(b.project_title, undefined, { sensitivity: "base", numeric: true }),
+    status: (a, b) => (isScored(a) ? 1 : 0) - (isScored(b) ? 1 : 0), // ascending = not scored first
+  }[VIEW.sort];
+  return list.sort((a, b) => dir * cmp(a, b) || byOrder(a, b));
+}
+
+function setSort(key) {
+  if (VIEW.sort === key) VIEW.dir = VIEW.dir === "asc" ? "desc" : "asc";
+  else { VIEW.sort = key; VIEW.dir = key === "score" ? "desc" : "asc"; }
+  saveView(); renderList();
+}
+function setFilter(f) { VIEW.filter = f; saveView(); renderList(); }
+
 function statusHtml(w) {
   if (loadDraft(w.id)) return `<span class="chip pending">${icon("status-warning")} Unsaved draft</span>`;
-  if (SCORES.has(w.id)) return `<span class="chip done">${icon("status-positive")} ${Number(SCORES.get(w.id)).toFixed(2)}</span>`;
+  if (isScored(w)) return `<span class="chip done">${icon("status-positive")} Scored</span>`;
   return '<span class="chip">Not scored</span>';
+}
+
+function techChips(w) {
+  return [w.bedrock_used ? "Bedrock" : null, w.agentcore_used ? "AgentCore" : null]
+    .filter(Boolean).map((t) => `<span class="bdg bdg-yes">${t}</span>`).join("");
 }
 
 function updateStats() {
   const total = WORKS.length;
-  const done = WORKS.filter((w) => SCORES.has(w.id)).length;
-  const pct = total ? Math.round((done / total) * 100) : 0;
+  const done = WORKS.filter(isScored).length;
   document.getElementById("stat-total").textContent = total;
   document.getElementById("stat-done").textContent = done;
   document.getElementById("stat-left").textContent = Math.max(0, total - done);
-  document.getElementById("progress-pct").textContent = pct + "%";
-  const rail = document.getElementById("progress-rail");
-  rail.setAttribute("aria-valuenow", String(pct));
-  rail.setAttribute("aria-valuetext", done + " of " + total + " projects scored");
-  rail.innerHTML = WORKS.map((w) => '<i class="' + (SCORES.has(w.id) ? "done" : "") + '"></i>').join("");
+  document.getElementById("n-all").textContent = total;
+  document.getElementById("n-done").textContent = done;
+  document.getElementById("n-todo").textContent = Math.max(0, total - done);
 }
 
 function renderList() {
-  const list = document.getElementById("work-list");
+  const body = document.getElementById("work-list");
   updateStats();
+
+  // controls reflect the current view
+  document.querySelectorAll("[data-filter]").forEach((b) => {
+    const on = b.dataset.filter === VIEW.filter;
+    b.classList.toggle("active", on); b.setAttribute("aria-pressed", String(on));
+  });
+  document.querySelectorAll("th[data-col]").forEach((th) => {
+    const on = th.dataset.col === VIEW.sort;
+    th.setAttribute("aria-sort", on ? (VIEW.dir === "asc" ? "ascending" : "descending") : "none");
+    const ic = th.querySelector(".th-ic");
+    if (ic) ic.innerHTML = on ? icon(VIEW.dir === "asc" ? "angle-up" : "angle-down") : "";
+  });
+  const sel = document.getElementById("sort-select");
+  if (sel) sel.value = `${VIEW.sort}-${VIEW.dir}`;
+
   if (!WORKS.length) {
-    list.innerHTML = `<div class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet. Please wait for the admin to add them.</div>`;
+    body.innerHTML = `<tr><td colspan="6" class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet. Please wait for the admin to add them.</td></tr>`;
     return;
   }
-  list.innerHTML = WORKS.map((w, i) => `
-    <button type="button" class="work-row ${SCORES.has(w.id) ? "is-done" : ""}" data-id="${esc(w.id)}" onclick="openScore('${esc(w.id)}')">
-      <span class="order-badge">${w.position || i + 1}</span>
-      <span class="wr-main">
-        <span class="wr-title">${esc(w.project_title)}</span>
-        <span class="wr-team">${esc(teamSubline(w))}</span>
-        <span class="bdg-row">${workBadges(w)}</span>
-        <span class="wr-host">${esc(hostOf(w.project_url))}</span>
-      </span>
-      <span class="wr-side">
-        <span class="wr-status">${statusHtml(w)}</span>
-        <span class="wr-cta">${SCORES.has(w.id) ? "Edit" : "Score"} ${icon("angle-right")}</span>
-      </span>
-    </button>`).join("");
+  const rows = visibleWorks();
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="6" class="empty">${VIEW.filter === "todo" ? "You have scored every project." : "You have not scored any project yet."} <button type="button" class="link-btn" onclick="setFilter('all')">Show all projects</button></td></tr>`;
+    return;
+  }
+  body.innerHTML = rows.map((w) => {
+    const scored = isScored(w);
+    const sub = teamSubline(w);
+    const tags = (showTeamNo(w) ? `<span class="bdg bdg-team">Team ${w.team_number}</span>` : "") +
+      (w.fallback ? `<span class="bdg bdg-warn">${icon("status-warning")} Link unavailable</span>` : "");
+    const tech = techChips(w);
+    return `
+      <tr class="work-tr ${scored ? "is-done" : ""}" data-id="${esc(w.id)}" onclick="openScore('${esc(w.id)}')">
+        <td class="c-order"><span class="num">${w.position || ""}</span></td>
+        <td class="c-proj">
+          <button type="button" class="row-link" onclick="event.stopPropagation(); openScore('${esc(w.id)}')">${esc(w.project_title)}</button>
+          ${sub ? `<div class="cell-sub">${esc(sub)}</div>` : ""}
+          ${tags ? `<div class="bdg-row">${tags}</div>` : ""}
+          ${tech ? `<div class="bdg-row tech-inline">${tech}</div>` : ""}
+        </td>
+        <td class="c-tech">${tech || '<span class="t-mute">-</span>'}</td>
+        <td class="c-status">${statusHtml(w)}</td>
+        <td class="c-score">${scored ? `<span class="score-cell">${Number(SCORES.get(w.id)).toFixed(2)}</span>` : '<span class="t-mute">-</span>'}</td>
+        <td class="c-act"><button type="button" class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openScore('${esc(w.id)}')">${scored ? "Edit" : "Score"} ${icon("angle-right")}</button></td>
+      </tr>`;
+  }).join("");
 }
 
-function refreshRow(workId) {
-  const w = WORKS.find((x) => x.id === workId);
-  const row = document.querySelector(`.work-row[data-id="${workId}"]`);
-  if (w && row) {
-    row.classList.toggle("is-done", SCORES.has(w.id));
-    row.querySelector(".wr-status").innerHTML = statusHtml(w);
-    row.querySelector(".wr-cta").innerHTML = (SCORES.has(w.id) ? "Edit" : "Score") + " " + icon("angle-right");
-  }
-  updateStats();
-}
+// A saved (or failed) score changes the row's status and its place in a filtered list.
+function refreshRow() { renderList(); }
+
+// ---- list controls ----
+document.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => setFilter(b.dataset.filter)));
+document.querySelectorAll("th[data-col] .th-sort").forEach((b) => b.addEventListener("click", () => setSort(b.closest("th").dataset.col)));
+document.getElementById("sort-select").addEventListener("change", (e) => {
+  const [sort, dir] = e.target.value.split("-");
+  VIEW.sort = sort; VIEW.dir = dir; saveView(); renderList();
+});
 
 // ---------- Scoring sheet ----------
 function setPane(name) {
