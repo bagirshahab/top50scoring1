@@ -500,6 +500,21 @@ document.getElementById("score-form").addEventListener("submit", async (e) => {
     return;
   }
 
+  // Ask before saving, so a stray tap on the big red button cannot submit a score.
+  const upcoming = nextAfter(currentWorkId);
+  const title = (WORKS.find((w) => w.id === currentWorkId) || {}).project_title || "this project";
+  const total = document.getElementById("score-total-val").textContent;
+  const confirmed = await askConfirm({
+    title: upcoming ? "Submit and go to the next project?" : "Submit this score?",
+    message: upcoming
+      ? `Are you sure you want to submit your score for ${title} (${total} / 100) and go to the next project, ${upcoming.project_title}?`
+      : `Are you sure you want to submit your score for ${title} (${total} / 100)? This is the last project.`,
+    confirmText: upcoming ? "Yes, submit and go next" : "Yes, submit",
+    cancelText: "Review score",
+    iconName: "status-info",
+  });
+  if (!confirmed || !currentWorkId) return;
+
   const workId = currentWorkId;
   saveDraft(workId, payload);
 
