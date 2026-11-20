@@ -48,7 +48,7 @@ async function loadRanking() {
         <tr class="clickable ${rank <= TOP_N && hasScore ? "in-top" : ""}" onclick="openDetail('${esc(r.id)}')">
           <td><span class="rank-badge ${rankCls}">${rank}</span></td>
           <td>
-            <div class="cell-title">${showTeamNo(r) ? `<span class="team-no">T${r.team_number}</span> ` : ""}${esc(r.project_title)}${r.fallback ? ' <span class="bdg bdg-warn">Fallback</span>' : ""}</div>
+            <div class="cell-title">${esc(r.project_title)}${r.fallback ? ' <span class="bdg bdg-warn">Fallback</span>' : ""}</div>
             <div class="cell-sub">${esc(teamSubline(r))}</div>
           </td>
           <td><span class="order-badge sm">${r.position || "–"}</span></td>
@@ -184,7 +184,7 @@ function renderWorks() {
     <div class="order-item ${w.fallback ? "is-fallback" : ""}">
       <span class="order-badge">${i + 1}</span>
       <div class="oi-main">
-        <div class="cell-title">${showTeamNo(w) ? `<span class="team-no">T${w.team_number}</span> ` : ""}${esc(w.project_title)}</div>
+        <div class="cell-title">${esc(w.project_title)}</div>
         <div class="cell-sub">${esc(teamSubline(w))}</div>
         <div class="bdg-row">
           ${linkBadge(w)}
@@ -251,7 +251,7 @@ async function checkLinks(id) {
       box.className = "check-summary " + (bad.length ? "has-bad" : "all-ok");
       box.innerHTML = bad.length
         ? `<b>${bad.length} of ${data.checked} links failed</b> at ${fmtDate(new Date().toISOString())}: ` +
-          bad.map((w) => `${w.team_number ? "T" + w.team_number + " " : ""}${esc(w.project_title)} (${esc(w.link_note || "failed")})`).join(" · ") +
+          bad.map((w) => `${esc(w.project_title)} (${esc(w.link_note || "failed")})`).join(" · ") +
           `<br>Open <b>Edit</b> on those projects and tick <b>Mark as fallback</b> if the team cannot fix the link.`
         : `<b>All ${data.checked} links are working</b> (checked ${fmtDate(new Date().toISOString())}).`;
     } else {
@@ -276,7 +276,6 @@ function editWork(id) {
   document.getElementById("w-title").value = w.project_title;
   document.getElementById("w-category").value = w.category || "";
   document.getElementById("w-url").value = w.project_url || "";
-  document.getElementById("w-number").value = w.team_number || "";
   document.getElementById("w-bedrock").value = yn(w.bedrock_used);
   document.getElementById("w-agentcore").value = yn(w.agentcore_used);
   document.getElementById("w-video").value = w.video_url || "";
@@ -313,7 +312,6 @@ document.getElementById("work-form").addEventListener("submit", async (e) => {
     project_title: document.getElementById("w-title").value.trim(),
     category: document.getElementById("w-category").value.trim(),
     project_url: document.getElementById("w-url").value.trim(),
-    team_number: document.getElementById("w-number").value.trim(),
     bedrock_used: document.getElementById("w-bedrock").value,
     agentcore_used: document.getElementById("w-agentcore").value,
     video_url: document.getElementById("w-video").value.trim(),

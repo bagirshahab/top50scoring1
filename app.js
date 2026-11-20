@@ -131,11 +131,6 @@ async function apiFetch(path, options = {}) {
 // The team name is skipped when it just repeats the project title, and the team number
 // is skipped when the team name already contains it (e.g. "test 6" + number 6).
 const _same = (a, b) => String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
-function showTeamNo(w) {
-  if (!w.team_number) return false;
-  const nums = String(w.team_name || "").match(/\d+/g) || [];
-  return !nums.some((n) => Number(n) === Number(w.team_number));
-}
 function teamSubline(w) {
   const parts = [];
   if (w.team_name && !_same(w.team_name, w.project_title)) parts.push(w.team_name);

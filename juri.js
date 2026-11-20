@@ -131,7 +131,6 @@ function hostOf(url) {
 
 function workBadges(w) {
   const b = [];
-  if (showTeamNo(w)) b.push(`<span class="bdg bdg-team">Team ${w.team_number}</span>`);
   if (w.bedrock_used === true) b.push(`<span class="bdg bdg-yes">${icon("status-positive")} Bedrock</span>`);
   if (w.bedrock_used === false) b.push(`<span class="bdg bdg-no">${icon("status-negative")} Bedrock</span>`);
   if (w.agentcore_used === true) b.push(`<span class="bdg bdg-yes">${icon("status-positive")} AgentCore</span>`);
@@ -211,8 +210,7 @@ function renderList() {
   body.innerHTML = orderedWorks().map((w) => {
     const scored = isScored(w);
     const sub = teamSubline(w);
-    const tags = (showTeamNo(w) ? `<span class="bdg bdg-team">Team ${w.team_number}</span>` : "") +
-      (w.fallback ? `<span class="bdg bdg-warn">${icon("status-warning")} Link unavailable</span>` : "");
+    const tags = (w.fallback ? `<span class="bdg bdg-warn">${icon("status-warning")} Link unavailable</span>` : "");
     const tech = techChips(w);
     return `
       <tr class="work-tr ${scored ? "is-done" : ""} ${w.id === nextId ? "is-next" : ""}" data-id="${esc(w.id)}" onclick="openScore('${esc(w.id)}')">

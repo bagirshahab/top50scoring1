@@ -126,7 +126,7 @@
           <tr class="${rank <= TOP_N && hasScore ? "in-top" : ""}">
             <td><span class="rank-badge ${rankCls}">${rank}</span></td>
             <td>
-              <div class="cell-title">${showTeamNo(r) ? `<span class="team-no">T${r.team_number}</span>` : ""}${esc(r.project_title)}</div>
+              <div class="cell-title">${esc(r.project_title)}</div>
               ${sub ? `<div class="cell-sub">${esc(sub)}</div>` : ""}
             </td>
             <td>${hasScore ? `<span class="num">${r.judge_count}</span>` : `<span class="t-mute">none</span>`}</td>

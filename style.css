@@ -207,7 +207,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { box-shadow: 
 .req { color: var(--red-text); }
 .opt { font-weight: 500; color: var(--subtle); font-size: 12.5px; }
 .hint { font-size: 12.5px; color: var(--subtle); margin-top: 6px; }
-.field-row { display: grid; grid-template-columns: 96px 1fr 1fr; gap: 12px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 input[type="text"], input[type="password"], input[type="number"], textarea, select {
   width: 100%; min-height: 44px; padding: 10px 12px; font-size: 15px;
   background: var(--inset); border: 1px solid var(--line-strong); border-radius: 8px; color: var(--text);
@@ -303,13 +303,11 @@ tr.avg-row td { background: var(--inset); font-weight: 700; border-top: 1px soli
 .bdg-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .bdg-row:empty { display: none; }
 .bdg { display: inline-flex; align-items: center; gap: 5px; min-height: 22px; padding: 0 8px; border-radius: var(--r-sm); font-size: 12px; font-weight: 600; line-height: 1.3; color: var(--muted); background: var(--raised); border: 1px solid var(--line); }
-.bdg-team { background: var(--ticket-bg); color: var(--ticket-fg); border-color: transparent; font-stretch: 85%; font-weight: 700; }
 .bdg-yes { color: var(--cyan-text); background: var(--cyan-soft); border-color: var(--cyan-line); }
 .bdg-no { color: var(--subtle); }
 .bdg-ok { color: var(--green-text); background: var(--green-soft); border-color: var(--green-line); }
 .bdg-bad { color: var(--red-text); background: var(--red-soft); border-color: rgba(230, 0, 0, 0.45); }
 .bdg-warn { color: var(--amber); background: var(--amber-soft); border-color: var(--amber-line); }
-.team-no { display: inline-block; padding: 0 7px; margin-right: 6px; border-radius: var(--r-sm); font-size: 12px; font-weight: 700; font-stretch: 85%; background: var(--ticket-bg); color: var(--ticket-fg); vertical-align: 1px; }
 .t-ok { color: var(--green-text); } .t-bad { color: var(--red-text); } .t-warn { color: var(--amber); } .t-mute { color: var(--subtle); }
 
 /* ===== Modal and dialogs ===== */
