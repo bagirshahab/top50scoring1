@@ -404,13 +404,26 @@ async function navigate(delta) {
   const i = list.findIndex((w) => w.id === currentWorkId);
   const target = list[i + delta];
   if (!target) return;
-  if (isDirty()) {
-    const ok = await askConfirm({
-      title: "Discard your changes?",
-      message: "You have unsaved changes on this project. Move to " + target.project_title + " anyway?",
-      confirmText: "Yes, move on",
-      cancelText: "Stay and score",
-    });
+  // Leaving a project that has no saved score, or that has edits not yet saved, needs a yes.
+  const here = list[i];
+  const scored = SCORES.has(currentWorkId);
+  if (!scored || isDirty()) {
+    const where = delta > 0 ? "the next project" : "the previous project";
+    const ok = await askConfirm(scored
+      ? {
+          title: "Discard your changes?",
+          message: `You have unsaved changes on ${here.project_title}. Move to ${target.project_title} anyway?`,
+          confirmText: "Yes, move on",
+          cancelText: "Stay and score",
+        }
+      : {
+          title: "This project has not been scored",
+          message: `You have not submitted a score for No. ${here.position || i + 1}, ${here.project_title}.` +
+            (isDirty() ? " Your unsaved changes will be discarded." : "") +
+            ` Go to ${where}, ${target.project_title}, anyway? You can come back to it later.`,
+          confirmText: "Yes, skip for now",
+          cancelText: "Stay and score",
+        });
     if (!ok) return;
   }
   openScore(target.id);

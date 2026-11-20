@@ -86,6 +86,12 @@ export const JUDGING_CLOSES_AT = new Date(process.env.JUDGING_CLOSES_AT || "2026
 // before judging opens. Delete these accounts (Admin > Judges) before the real session.
 export const isTestUsername = (u) => /^testjudge/i.test(String(u || ""));
 
+// Public leaderboard visibility.
+// true  = the public leaderboard is shown now, even though judging has not opened (used for review).
+// false = it follows the judging window again: hidden until the window opens.
+// (LEADERBOARD_PUBLIC=false in the environment still hides it, whatever this is.)
+export const LEADERBOARD_FORCE_OPEN = true;
+
 // "before" | "open" | "closed"
 export function judgingState(now = Date.now()) {
   if (!isNaN(JUDGING_OPENS_AT) && now < JUDGING_OPENS_AT) return "before";
