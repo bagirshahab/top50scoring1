@@ -14,7 +14,7 @@
 //  Admins are always allowed so they can set up / review any time.
 // =====================================================================
 import bcrypt from "bcryptjs";
-import { sql, setCors, parseBody, signToken, judgingState, judgingBlockMessage } from "./_lib.js";
+import { sql, setCors, parseBody, signToken, judgingState, judgingBlockMessage, isTestUsername } from "./_lib.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     if (role === "judge") {
       // Gate: judges can only sign in while judging is open (window defined in _lib.js).
       const state = judgingState();
-      if (state !== "open") {
+      if (state !== "open" && !isTestUsername(uname)) {
         return res.status(403).json({ error: judgingBlockMessage(state), judging: state });
       }
 

@@ -174,7 +174,8 @@
         const res = await fetch(API('/api/login'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role: currentRole, username, password }),
+          // Rehearsal accounts (testjudge...) can sign in as judges even while the real window is closed.
+          body: JSON.stringify({ role: /^testjudge/i.test(username) ? 'judge' : currentRole, username, password }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Sign-in failed.');

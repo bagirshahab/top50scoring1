@@ -82,6 +82,10 @@ export async function withRetry(fn, { tries = 3, baseMs = 250 } = {}) {
 export const JUDGING_OPENS_AT = new Date(process.env.JUDGING_OPENS_AT || "2026-11-22T08:00:00+07:00").getTime();
 export const JUDGING_CLOSES_AT = new Date(process.env.JUDGING_CLOSES_AT || "2026-12-31T23:59:00+07:00").getTime();
 
+// Accounts whose username starts with "testjudge" ignore the window, so the team can rehearse
+// before judging opens. Delete these accounts (Admin > Judges) before the real session.
+export const isTestUsername = (u) => /^testjudge/i.test(String(u || ""));
+
 // "before" | "open" | "closed"
 export function judgingState(now = Date.now()) {
   if (!isNaN(JUDGING_OPENS_AT) && now < JUDGING_OPENS_AT) return "before";
@@ -106,6 +110,7 @@ export function judgingBlockMessage(state) {
 // Use on judge endpoints: returns true when the request may continue, otherwise sends 403.
 export function requireJudgingOpen(res, user) {
   if (!user || user.role !== "judge") return true; // admins are never blocked
+  if (isTestUsername(user.username)) return true;  // rehearsal accounts
   const state = judgingState();
   if (state === "open") return true;
   res.status(403).json({ error: judgingBlockMessage(state), judging: state });
