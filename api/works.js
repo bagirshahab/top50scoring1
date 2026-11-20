@@ -147,10 +147,10 @@ export default async function handler(req, res) {
       // A project that came from the form is remembered as dismissed, so the next sync does not
       // bring it back. It returns only if that team submits the form again.
       await sql`
-        INSERT INTO pjt_sync_ignore (team_number, submitted_at)
-        SELECT team_number, source_submitted_at FROM pjt_works
-        WHERE id = ${id} AND team_number IS NOT NULL AND source_submitted_at IS NOT NULL
-        ON CONFLICT (team_number) DO UPDATE SET submitted_at = EXCLUDED.submitted_at, created_at = NOW()
+        INSERT INTO pjt_sync_ignore (source_key, submitted_at)
+        SELECT source_key, source_submitted_at FROM pjt_works
+        WHERE id = ${id} AND source_key IS NOT NULL AND source_submitted_at IS NOT NULL
+        ON CONFLICT (source_key) DO UPDATE SET submitted_at = EXCLUDED.submitted_at, created_at = NOW()
       `;
       await sql`DELETE FROM pjt_works WHERE id = ${id}`;
       await sql`

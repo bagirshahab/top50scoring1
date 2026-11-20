@@ -121,7 +121,7 @@ function sourceBadges(w) {
   if (!w.source_submitted_at) return "";
   const n = Number(w.source_count) || 1;
   let h = `<span class="bdg" title="Added from the submission form. Latest submission: ${esc(fmtDate(w.source_submitted_at))}">${icon("upload")} From form${n > 1 ? " (" + n + " submissions)" : ""}</span>`;
-  if (w.source_conflict) h += `<span class="bdg bdg-warn" title="This team number was submitted from more than one email address. The latest submission is used. Please verify.">${icon("status-warning")} Different emails</span>`;
+  if (w.source_conflict) h += `<span class="bdg bdg-warn" title="Another email address submitted the same team number, so this project has no team number. Please verify.">${icon("status-warning")} Team number clash</span>`;
   return h;
 }
 

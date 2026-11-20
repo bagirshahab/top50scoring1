@@ -255,8 +255,8 @@ Lalu cukup taruh tautan "Penjurian" di navigasi website utama.
 
 Setiap tim yang mengirim form Top 20 otomatis muncul di daftar project penjurian. Tidak perlu input manual atau impor CSV.
 
-- **Sumber:** view `submissions_top20_current` di database yang sama (satu baris per nomor tim, submission terbaru yang dipakai). Aplikasi hanya membaca, tidak pernah menulis ke tabel form.
+- **Sumber:** view `submissions_top20_current` di database yang sama (satu baris per alamat email, submission terbaru yang dipakai; nomor tim dibaca dari tabel `submissions_top20`). Aplikasi hanya membaca, tidak pernah menulis ke tabel form.
 - **Kapan jalan:** setiap daftar project atau ranking dimuat (dibatasi sekali per 15 detik), dan lewat tombol **Sync from form** di tab Projects & Order.
-- **Tim baru** ditambahkan di urutan terakhir (maks 20). **Tim yang kirim ulang** diperbarui hanya jika submission-nya lebih baru dari yang terakhir diterapkan, jadi perbaikan manual admin (link, fallback, screenshot, urutan) tidak tertimpa sampai tim itu mengirim ulang.
+- **Tim dikenali dari emailnya** (hanya hash yang disimpan). **Tim baru** ditambahkan di urutan terakhir (maks 20). **Tim yang kirim ulang** diperbarui hanya jika submission-nya lebih baru dari yang terakhir diterapkan, jadi perbaikan manual admin (link, fallback, screenshot, urutan) tidak tertimpa sampai tim itu mengirim ulang.
 - **Project yang dihapus admin** tidak muncul lagi sampai tim itu mengirim form lagi (tabel kecil `pjt_sync_ignore`).
-- Nomor tim yang dikirim dari lebih dari satu email diberi tanda peringatan "Different emails".
+- Jika dua email memakai nomor tim yang sama, keduanya tetap masuk; yang belakangan dimasukkan tanpa nomor dan diberi tanda "Team number clash" supaya admin memeriksa.

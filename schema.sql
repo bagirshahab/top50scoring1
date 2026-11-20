@@ -126,17 +126,19 @@ CREATE TABLE IF NOT EXISTS pjt_admins (
 
 -- =====================================================================
 --  MIGRATION v3 (automatic sync from the submission form). Additive, safe to re-run.
---  The app READS the view submissions_top20_current (one row per team number, latest
---  submission wins) and never writes to the form's tables.
+--  The app READS the view submissions_top20_current (one row per EMAIL, latest submission
+--  wins) and never writes to the form's tables. A team is matched by a hash of its email.
 --
 --    ALTER TABLE pjt_works ADD COLUMN IF NOT EXISTS source_submitted_at TIMESTAMPTZ,
 --                          ADD COLUMN IF NOT EXISTS source_conflict BOOLEAN,
---                          ADD COLUMN IF NOT EXISTS source_count INTEGER;
+--                          ADD COLUMN IF NOT EXISTS source_count INTEGER,
+--                          ADD COLUMN IF NOT EXISTS source_key TEXT;
+--    CREATE UNIQUE INDEX IF NOT EXISTS uq_pjt_works_source_key ON pjt_works (source_key) WHERE source_key IS NOT NULL;
 --
 --    -- Remembers projects the admin deleted, so a sync does not bring them back
 --    -- until that team submits the form again.
 --    CREATE TABLE IF NOT EXISTS pjt_sync_ignore (
---      team_number  INTEGER PRIMARY KEY,
+--      source_key   TEXT PRIMARY KEY,
 --      submitted_at TIMESTAMPTZ NOT NULL,
 --      created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 --    );
