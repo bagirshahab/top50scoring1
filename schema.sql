@@ -123,3 +123,21 @@ CREATE TABLE IF NOT EXISTS pjt_admins (
 --      ADD COLUMN IF NOT EXISTS link_checked_at TIMESTAMPTZ;
 --    CREATE UNIQUE INDEX IF NOT EXISTS uq_pjt_works_team_number ON pjt_works (team_number) WHERE team_number IS NOT NULL;
 -- =====================================================================
+
+-- =====================================================================
+--  MIGRATION v3 (automatic sync from the submission form). Additive, safe to re-run.
+--  The app READS the view submissions_top20_current (one row per team number, latest
+--  submission wins) and never writes to the form's tables.
+--
+--    ALTER TABLE pjt_works ADD COLUMN IF NOT EXISTS source_submitted_at TIMESTAMPTZ,
+--                          ADD COLUMN IF NOT EXISTS source_conflict BOOLEAN,
+--                          ADD COLUMN IF NOT EXISTS source_count INTEGER;
+--
+--    -- Remembers projects the admin deleted, so a sync does not bring them back
+--    -- until that team submits the form again.
+--    CREATE TABLE IF NOT EXISTS pjt_sync_ignore (
+--      team_number  INTEGER PRIMARY KEY,
+--      submitted_at TIMESTAMPTZ NOT NULL,
+--      created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+--    );
+-- =====================================================================

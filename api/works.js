@@ -15,6 +15,7 @@
 // =====================================================================
 import { sql, setCors, parseBody, verifyToken, requireRole, nextWorkCode, requireJudgingOpen } from "./_lib.js";
 import { MAX_WORKS, readWorkFields } from "./_works-util.js";
+import { syncSubmissions } from "./_sync.js";
 
 function dupMessage(err) {
   return err && err.code === "23505" ? "That team number is already used by another project." : null;
@@ -31,17 +32,24 @@ export default async function handler(req, res) {
       if (!user) return res.status(401).json({ error: "Not signed in." });
       if (!requireJudgingOpen(res, user)) return; // judges see the project list only while judging is open
 
+      // New form submissions appear automatically (throttled; a failure never blocks the list).
+      const sync = await syncSubmissions().catch(() => null);
+
       const rows = await sql`
         SELECT id, code, team_name, project_title, category, project_url, position, created_at,
                team_number, bedrock_used, agentcore_used, repo_url, video_url, screenshot_url, fallback,
-               link_ok, link_status, link_note, link_checked_at
+               link_ok, link_status, link_note, link_checked_at,
+               source_submitted_at, source_conflict, source_count
         FROM pjt_works
         ORDER BY position NULLS LAST, created_at, code
       `;
       if (user.role !== "admin") {
-        for (const r of rows) { delete r.link_note; delete r.link_status; delete r.link_ok; delete r.link_checked_at; }
+        for (const r of rows) {
+          delete r.link_note; delete r.link_status; delete r.link_ok; delete r.link_checked_at;
+          delete r.source_submitted_at; delete r.source_conflict; delete r.source_count;
+        }
       }
-      return res.status(200).json({ works: rows, max: MAX_WORKS });
+      return res.status(200).json({ works: rows, max: MAX_WORKS, sync: user.role === "admin" && sync && !sync.throttled ? { added: sync.added, updated: sync.updated, skipped: sync.skipped, warnings: sync.warnings, at: sync.at } : undefined });
     }
 
     // -------- POST: add --------
@@ -136,6 +144,14 @@ export default async function handler(req, res) {
       const id = req.query.id;
       if (!id) return res.status(400).json({ error: "Project ID is required." });
 
+      // A project that came from the form is remembered as dismissed, so the next sync does not
+      // bring it back. It returns only if that team submits the form again.
+      await sql`
+        INSERT INTO pjt_sync_ignore (team_number, submitted_at)
+        SELECT team_number, source_submitted_at FROM pjt_works
+        WHERE id = ${id} AND team_number IS NOT NULL AND source_submitted_at IS NOT NULL
+        ON CONFLICT (team_number) DO UPDATE SET submitted_at = EXCLUDED.submitted_at, created_at = NOW()
+      `;
       await sql`DELETE FROM pjt_works WHERE id = ${id}`;
       await sql`
         UPDATE pjt_works w SET position = t.pos

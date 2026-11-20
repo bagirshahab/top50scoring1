@@ -109,8 +109,49 @@ async function loadWorks() {
     WORKS = data.works || [];
     MAX_WORKS = data.max || 20;
     renderWorks();
+    showSyncNote(data.sync);
   } catch (err) {
     list.innerHTML = `<div class="empty">${esc(err.message)}</div>`;
+  }
+}
+
+// ----- Submission form sync -----
+// Projects come in automatically from the form. Each one shows where it came from.
+function sourceBadges(w) {
+  if (!w.source_submitted_at) return "";
+  const n = Number(w.source_count) || 1;
+  let h = `<span class="bdg" title="Added from the submission form. Latest submission: ${esc(fmtDate(w.source_submitted_at))}">${icon("upload")} From form${n > 1 ? " (" + n + " submissions)" : ""}</span>`;
+  if (w.source_conflict) h += `<span class="bdg bdg-warn" title="This team number was submitted from more than one email address. The latest submission is used. Please verify.">${icon("status-warning")} Different emails</span>`;
+  return h;
+}
+
+// Shown only when something is worth saying: new/updated projects, skipped rows, or warnings.
+function showSyncNote(sync) {
+  const box = document.getElementById("sync-note");
+  if (!box) return;
+  const lines = [];
+  if (sync && sync.added) lines.push(`<b>${sync.added} new project${sync.added > 1 ? "s" : ""}</b> added from the submission form.`);
+  if (sync && sync.updated) lines.push(`<b>${sync.updated} project${sync.updated > 1 ? "s" : ""}</b> updated from a newer submission.`);
+  ((sync && sync.skipped) || []).forEach((s) => lines.push(esc(s)));
+  ((sync && sync.warnings) || []).forEach((s) => lines.push(esc(s)));
+  box.hidden = !lines.length;
+  box.className = "check-summary " + (sync && sync.skipped && sync.skipped.length ? "has-bad" : "all-ok");
+  box.innerHTML = lines.join("<br>");
+}
+
+async function syncNow() {
+  const btn = document.getElementById("sync-btn");
+  const label = btn.innerHTML;
+  btn.disabled = true; btn.textContent = "Syncing...";
+  try {
+    const r = await apiFetch("/api/sync-submissions", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    await loadWorks();
+    showSyncNote(r);
+    toast(r.added || r.updated ? `Synced: ${r.added} new, ${r.updated} updated.` : "Already up to date with the submission form.");
+  } catch (err) {
+    toast(err.message, "error");
+  } finally {
+    btn.innerHTML = label; btn.disabled = false;
   }
 }
 
@@ -147,9 +188,10 @@ function renderWorks() {
         <div class="cell-sub">${esc(teamSubline(w))}</div>
         <div class="bdg-row">
           ${linkBadge(w)}
-          ${w.fallback ? '<span class="bdg bdg-warn">${icon("status-warning")} Fallback</span>' : ""}
+          ${w.fallback ? `<span class="bdg bdg-warn">${icon("status-warning")} Fallback</span>` : ""}
           ${yesNoBadge("Bedrock", w.bedrock_used)}${yesNoBadge("AgentCore", w.agentcore_used)}
-          ${w.video_url ? '<span class="bdg">${icon("video-on")} Video</span>' : ""}${w.screenshot_url ? '<span class="bdg">${icon("file")} Screenshot</span>' : ""}
+          ${w.video_url ? `<span class="bdg">${icon("video-on")} Video</span>` : ""}${w.screenshot_url ? `<span class="bdg">${icon("file")} Screenshot</span>` : ""}
+          ${sourceBadges(w)}
         </div>
         <a class="oi-link" href="${esc(w.project_url)}" target="_blank" rel="noopener noreferrer">${esc(w.project_url)}</a>
       </div>

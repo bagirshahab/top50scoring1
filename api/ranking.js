@@ -8,6 +8,7 @@
 //  Also returns a per-judge breakdown so the admin can see who scored what.
 // =====================================================================
 import { sql, setCors, requireRole } from "./_lib.js";
+import { syncSubmissions } from "./_sync.js";
 
 export default async function handler(req, res) {
   setCors(res);
@@ -18,6 +19,8 @@ export default async function handler(req, res) {
   if (!admin) return;
 
   try {
+    await syncSubmissions().catch(() => null); // new form submissions show up here too
+
     // Per-project aggregate
     const ranking = await sql`
       SELECT

@@ -248,3 +248,15 @@ Lalu cukup taruh tautan "Penjurian" di navigasi website utama.
 | Leaderboard publik "terkunci" | Env `LEADERBOARD_PUBLIC` di-set `false`. Ubah ke `true` (atau hapus) lalu redeploy. |
 | Error kolom `problem/weighted` tidak ada | DB masih pakai skema lama. Jalankan blok MIGRATION di `schema.sql`. |
 ```
+
+---
+
+## Sinkronisasi otomatis dari form submission (terbaru)
+
+Setiap tim yang mengirim form Top 20 otomatis muncul di daftar project penjurian. Tidak perlu input manual atau impor CSV.
+
+- **Sumber:** view `submissions_top20_current` di database yang sama (satu baris per nomor tim, submission terbaru yang dipakai). Aplikasi hanya membaca, tidak pernah menulis ke tabel form.
+- **Kapan jalan:** setiap daftar project atau ranking dimuat (dibatasi sekali per 15 detik), dan lewat tombol **Sync from form** di tab Projects & Order.
+- **Tim baru** ditambahkan di urutan terakhir (maks 20). **Tim yang kirim ulang** diperbarui hanya jika submission-nya lebih baru dari yang terakhir diterapkan, jadi perbaikan manual admin (link, fallback, screenshot, urutan) tidak tertimpa sampai tim itu mengirim ulang.
+- **Project yang dihapus admin** tidak muncul lagi sampai tim itu mengirim form lagi (tabel kecil `pjt_sync_ignore`).
+- Nomor tim yang dikirim dari lebih dari satu email diberi tanda peringatan "Different emails".
