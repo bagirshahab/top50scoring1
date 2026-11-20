@@ -90,7 +90,7 @@ export const isTestUsername = (u) => /^testjudge/i.test(String(u || ""));
 // true  = the public leaderboard is shown now, even though judging has not opened (used for review).
 // false = it follows the judging window again: hidden until the window opens.
 // (LEADERBOARD_PUBLIC=false in the environment still hides it, whatever this is.)
-export const LEADERBOARD_FORCE_OPEN = true;
+export const LEADERBOARD_FORCE_OPEN = false;
 
 // "before" | "open" | "closed"
 export function judgingState(now = Date.now()) {
