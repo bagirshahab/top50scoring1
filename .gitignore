@@ -7,3 +7,6 @@ node_modules/
 *.log
 judge-credentials.local.txt
 judge-credentials*.txt
+
+judging-final-top19.xlsx
+judging-final-top19-notes.xlsx

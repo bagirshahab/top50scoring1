@@ -143,3 +143,5 @@ CREATE TABLE IF NOT EXISTS pjt_admins (
 --      created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 --    );
 -- =====================================================================
+-- Team notes from the submission form (login hints, how to try the project). Filled by the sync.
+-- ALTER TABLE pjt_works ADD COLUMN IF NOT EXISTS notes TEXT;
