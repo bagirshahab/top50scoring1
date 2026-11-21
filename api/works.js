@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
       const rows = await sql`
         SELECT id, code, team_name, project_title, category, project_url, position, created_at,
-               team_number, repo_url, video_url, screenshot_url, fallback, notes,
+               team_number, repo_url, video_url, screenshot_url, fallback,
                link_ok, link_status, link_note, link_checked_at,
                source_submitted_at, source_conflict, source_count
         FROM pjt_works

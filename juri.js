@@ -259,28 +259,6 @@ function applyFallback(work) {
   document.getElementById("pf-empty").hidden = !!(work.video_url || work.screenshot_url);
 }
 
-// Team notes: plain text, links made clickable through DOM nodes (never innerHTML).
-function renderNotes(notes) {
-  const box = document.getElementById("team-notes");
-  const body = document.getElementById("team-notes-body");
-  body.textContent = "";
-  const text = String(notes || "").trim();
-  box.hidden = !text;
-  if (!text) return;
-  const re = /https?:\/\/[^\s<>"']+/g;
-  let last = 0, m;
-  while ((m = re.exec(text))) {
-    let url = m[0].replace(/[.,;:!?)\]]+$/, "");
-    if (m.index > last) body.append(text.slice(last, m.index));
-    const a = document.createElement("a");
-    a.href = url; a.textContent = url; a.target = "_blank"; a.rel = "noopener noreferrer";
-    body.append(a);
-    last = m.index + url.length;
-    re.lastIndex = last;
-  }
-  if (last < text.length) body.append(text.slice(last));
-}
-
 function ensureFrame() {
   const work = WORKS.find((w) => w.id === currentWorkId);
   const f = document.getElementById("score-frame");
@@ -325,7 +303,6 @@ async function openScore(workId) {
   document.getElementById("score-url").textContent = work.project_url;
   document.getElementById("score-badges").innerHTML = workBadges(work);
   applyFallback(work);
-  renderNotes(work.notes);
   document.getElementById("score-open").href = work.project_url;
   const f = document.getElementById("score-frame");
   f.dataset.for = ""; f.src = "about:blank";

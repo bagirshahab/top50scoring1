@@ -28,7 +28,6 @@ const THROTTLE_MS = 15000;
 let lastRun = 0;
 let lastResult = null;
 
-const cleanNotes = (v) => { const s = String(v ?? "").trim().slice(0, 4000); return s || null; };
 const ts = (v) => (v ? new Date(v).getTime() : 0);
 export const sourceKey = (email) => createHash("sha256").update(String(email || "").trim().toLowerCase()).digest("hex");
 
@@ -41,9 +40,6 @@ export async function syncSubmissions({ force = false, dryRun = false } = {}) {
     const rows = await sql`SELECT * FROM submissions_top20_current ORDER BY submitted_at`;
     const existing = await sql`SELECT id, source_key, source_submitted_at FROM pjt_works`;
     const byKey = new Map(existing.filter((e) => e.source_key).map((e) => [e.source_key, e]));
-    // Team notes (login hints, how to try the app). Only the table has them; the view does not. Latest row per email wins.
-    const noteRows = await sql`SELECT DISTINCT ON (lower(email)) lower(email) AS email, notes FROM submissions_top20 ORDER BY lower(email), created_at DESC, id DESC`;
-    const notesByKey = new Map(noteRows.map((n) => [sourceKey(n.email), cleanNotes(n.notes)]));
     const ignored = new Map((await sql`SELECT source_key, submitted_at FROM pjt_sync_ignore`).map((r) => [r.source_key, r.submitted_at]));
 
     for (const r of rows) {
@@ -89,10 +85,10 @@ export async function syncSubmissions({ force = false, dryRun = false } = {}) {
           await sql`
             INSERT INTO pjt_works
               (code, team_name, project_title, project_url, position,
-               repo_url, video_url, source_key, source_submitted_at, source_conflict, source_count, notes)
+               repo_url, video_url, source_key, source_submitted_at, source_conflict, source_count)
             VALUES (${code}, ${team}, ${title}, ${url}, (SELECT COALESCE(MAX(position), 0) + 1 FROM pjt_works),
                     ${repo.ok ? repo.value : null}, ${video.ok ? video.value : null},
-                    ${key}, ${r.submitted_at}, FALSE, ${count}, ${notesByKey.get(key) ?? null})
+                    ${key}, ${r.submitted_at}, FALSE, ${count})
           `;
         } catch (err) {
           if (err && err.code === "23505") { result.warnings.push(`${label}: added by another request at the same time.`); continue; }
@@ -100,13 +96,6 @@ export async function syncSubmissions({ force = false, dryRun = false } = {}) {
         }
       }
       result.added++;
-    }
-    // Notes are display-only and admins cannot edit them, so keep them equal to the latest form row.
-    if (!dryRun) {
-      for (const [key, notes] of notesByKey) {
-        if (!byKey.has(key)) continue;
-        await sql`UPDATE pjt_works SET notes = ${notes} WHERE source_key = ${key} AND notes IS DISTINCT FROM ${notes}`;
-      }
     }
   } catch (err) {
     console.error("sync-submissions error:", err);
