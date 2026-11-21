@@ -87,8 +87,6 @@ export function readWorkFields(body) {
       category: cat || null,
       project_url: url,
       team_number: teamNumber,
-      bedrock_used: parseBool(body.bedrock_used),
-      agentcore_used: parseBool(body.agentcore_used),
       repo_url: repo.value,
       video_url: video.value,
       screenshot_url: shot.value,

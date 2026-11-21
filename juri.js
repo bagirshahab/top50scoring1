@@ -121,7 +121,7 @@ async function loadWorks() {
     SCORES = new Map((myScores.scored || []).map((s) => [s.work_id, s.weighted]));
     renderList();
   } catch (err) {
-    list.innerHTML = `<tr><td colspan="6" class="empty">${esc(err.message)} <button type="button" class="link-btn" onclick="loadWorks()">Try again</button></td></tr>`;
+    list.innerHTML = `<tr><td colspan="5" class="empty">${esc(err.message)} <button type="button" class="link-btn" onclick="loadWorks()">Try again</button></td></tr>`;
   }
 }
 
@@ -131,10 +131,6 @@ function hostOf(url) {
 
 function workBadges(w) {
   const b = [];
-  if (w.bedrock_used === true) b.push(`<span class="bdg bdg-yes">${icon("status-positive")} Bedrock</span>`);
-  if (w.bedrock_used === false) b.push(`<span class="bdg bdg-no">${icon("status-negative")} Bedrock</span>`);
-  if (w.agentcore_used === true) b.push(`<span class="bdg bdg-yes">${icon("status-positive")} AgentCore</span>`);
-  if (w.agentcore_used === false) b.push(`<span class="bdg bdg-no">${icon("status-negative")} AgentCore</span>`);
   if (w.fallback) b.push(`<span class="bdg bdg-warn">${icon("status-warning")} Link unavailable</span>`);
   return b.join("");
 }
@@ -162,11 +158,6 @@ function statusHtml(w) {
   if (loadDraft(w.id)) return `<span class="chip pending">${icon("status-warning")} Unsaved draft</span>`;
   if (isScored(w)) return `<span class="chip done">${icon("status-positive")} Scored</span>`;
   return '<span class="chip">Not scored</span>';
-}
-
-function techChips(w) {
-  return [w.bedrock_used ? "Bedrock" : null, w.agentcore_used ? "AgentCore" : null]
-    .filter(Boolean).map((t) => `<span class="bdg bdg-yes">${t}</span>`).join("");
 }
 
 function updateStats() {
@@ -203,7 +194,7 @@ function renderList() {
   renderNextUp();
 
   if (!WORKS.length) {
-    body.innerHTML = `<tr><td colspan="6" class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet. Please wait for the admin to add them.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5" class="empty"><div class="empty-ic">${icon("folder-open", "big")}</div>No projects yet. Please wait for the admin to add them.</td></tr>`;
     return;
   }
   const nextId = (orderedWorks().find((w) => !isScored(w)) || {}).id;
@@ -211,7 +202,6 @@ function renderList() {
     const scored = isScored(w);
     const sub = teamSubline(w);
     const tags = (w.fallback ? `<span class="bdg bdg-warn">${icon("status-warning")} Link unavailable</span>` : "");
-    const tech = techChips(w);
     return `
       <tr class="work-tr ${scored ? "is-done" : ""} ${w.id === nextId ? "is-next" : ""}" data-id="${esc(w.id)}" onclick="openScore('${esc(w.id)}')">
         <td class="c-order"><span class="num">${w.position || ""}</span></td>
@@ -219,9 +209,7 @@ function renderList() {
           <button type="button" class="row-link" onclick="event.stopPropagation(); openScore('${esc(w.id)}')">${esc(w.project_title)}</button>
           ${sub ? `<div class="cell-sub">${esc(sub)}</div>` : ""}
           ${tags ? `<div class="bdg-row">${tags}</div>` : ""}
-          ${tech ? `<div class="bdg-row tech-inline">${tech}</div>` : ""}
         </td>
-        <td class="c-tech">${tech || '<span class="t-mute">-</span>'}</td>
         <td class="c-status">${statusHtml(w)}</td>
         <td class="c-score">${scored ? `<span class="score-cell">${Number(SCORES.get(w.id)).toFixed(2)}</span>` : '<span class="t-mute">-</span>'}</td>
         <td class="c-act"><button type="button" class="btn ${w.id === nextId ? "btn-primary" : "btn-ghost"} btn-sm" onclick="event.stopPropagation(); openScore('${esc(w.id)}')">${scored ? "Edit" : "Score"} ${icon("angle-right")}</button></td>

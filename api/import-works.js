@@ -3,7 +3,7 @@
 //  Import project submissions exported from the Top 20 submission form.
 //
 //  body: { rows: [ {team_number, team_name, project_title, website_url, repo_url,
-//                   video_url, bedrock_used, agentcore_used, submitted_at?}, ... ],
+//                   video_url, submitted_at?}, ... ],
 //          dry_run: true|false }
 //
 //  Rules
@@ -26,8 +26,6 @@ const ALIASES = {
   website_url: ["website_url", "website", "project_url", "url", "link", "web_link"],
   repo_url: ["repo_url", "repo", "repository", "repository_url", "github"],
   video_url: ["video_url", "video"],
-  bedrock_used: ["bedrock_used", "bedrock", "amazon_bedrock"],
-  agentcore_used: ["agentcore_used", "agentcore", "agent_core"],
   submitted_at: ["submitted_at", "updated_at", "created_at", "timestamp", "submitted", "date", "time"],
 };
 
@@ -88,8 +86,6 @@ export default async function handler(req, res) {
         project_url: url,
         repo_url: repo.ok ? repo.value : null,
         video_url: video.ok ? video.value : null,
-        bedrock_used: parseBool(pick(o, "bedrock_used")),
-        agentcore_used: parseBool(pick(o, "agentcore_used")),
       });
     });
 
@@ -123,7 +119,6 @@ export default async function handler(req, res) {
     const plan = incoming.map((r) => ({
       action: existingByTeam.has(r.team_number) ? "update" : "add",
       team_number: r.team_number, team_name: r.team_name, project_title: r.project_title, project_url: r.project_url,
-      bedrock_used: r.bedrock_used, agentcore_used: r.agentcore_used,
       has_video: !!r.video_url, has_repo: !!r.repo_url,
       url_changed: existingByTeam.has(r.team_number) && existingByTeam.get(r.team_number).project_url !== r.project_url,
     }));
@@ -145,8 +140,7 @@ export default async function handler(req, res) {
           link_note       = CASE WHEN project_url IS DISTINCT FROM ${r.project_url} THEN NULL ELSE link_note END,
           link_checked_at = CASE WHEN project_url IS DISTINCT FROM ${r.project_url} THEN NULL ELSE link_checked_at END,
           project_url = ${r.project_url},
-          repo_url = ${r.repo_url}, video_url = ${r.video_url},
-          bedrock_used = ${r.bedrock_used}, agentcore_used = ${r.agentcore_used}
+          repo_url = ${r.repo_url}, video_url = ${r.video_url}
         WHERE id = ${e.id}
       `;
     }
@@ -155,10 +149,10 @@ export default async function handler(req, res) {
       await sql`
         INSERT INTO pjt_works
           (code, team_name, project_title, category, project_url, position,
-           team_number, bedrock_used, agentcore_used, repo_url, video_url)
+           team_number, repo_url, video_url)
         VALUES (${code}, ${r.team_name}, ${r.project_title}, ${r.category}, ${r.project_url},
                 (SELECT COALESCE(MAX(position), 0) + 1 FROM pjt_works),
-                ${r.team_number}, ${r.bedrock_used}, ${r.agentcore_used}, ${r.repo_url}, ${r.video_url})
+                ${r.team_number}, ${r.repo_url}, ${r.video_url})
       `;
     }
     return res.status(200).json({ dry_run: false, applied: true, plan, summary, errors, warnings });

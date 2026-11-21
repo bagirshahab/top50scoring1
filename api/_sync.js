@@ -71,7 +71,6 @@ export async function syncSubmissions({ force = false, dryRun = false } = {}) {
               link_note       = CASE WHEN project_url IS DISTINCT FROM ${url} THEN NULL ELSE link_note END,
               link_checked_at = CASE WHEN project_url IS DISTINCT FROM ${url} THEN NULL ELSE link_checked_at END,
               project_url = ${url}, repo_url = ${repo.ok ? repo.value : null}, video_url = ${video.ok ? video.value : null},
-              bedrock_used = ${r.bedrock_used}, agentcore_used = ${r.agentcore_used},
               source_submitted_at = ${r.submitted_at}, source_conflict = FALSE, source_count = ${count}
             WHERE id = ${ex.id}
           `;
@@ -87,10 +86,10 @@ export async function syncSubmissions({ force = false, dryRun = false } = {}) {
           const code = await nextWorkCode();
           await sql`
             INSERT INTO pjt_works
-              (code, team_name, project_title, project_url, position, bedrock_used, agentcore_used,
+              (code, team_name, project_title, project_url, position,
                repo_url, video_url, source_key, source_submitted_at, source_conflict, source_count)
             VALUES (${code}, ${team}, ${title}, ${url}, (SELECT COALESCE(MAX(position), 0) + 1 FROM pjt_works),
-                    ${r.bedrock_used}, ${r.agentcore_used}, ${repo.ok ? repo.value : null}, ${video.ok ? video.value : null},
+                    ${repo.ok ? repo.value : null}, ${video.ok ? video.value : null},
                     ${key}, ${r.submitted_at}, FALSE, ${count})
           `;
         } catch (err) {

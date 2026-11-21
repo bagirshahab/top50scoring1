@@ -155,12 +155,6 @@ async function syncNow() {
   }
 }
 
-function yesNoBadge(label, v) {
-  if (v === true) return `<span class="bdg bdg-yes">${icon("status-positive")} ${label}</span>`;
-  if (v === false) return `<span class="bdg bdg-no">${icon("status-negative")} ${label}</span>`;
-  return "";
-}
-
 function linkBadge(w) {
   if (w.link_ok === true) return `<span class="bdg bdg-ok" title="${esc("HTTP " + w.link_status + " · checked " + fmtDate(w.link_checked_at))}">${icon("status-positive")} Link OK</span>`;
   if (w.link_ok === false) return `<span class="bdg bdg-bad" title="${esc((w.link_note || "Failed") + " · checked " + fmtDate(w.link_checked_at))}">${icon("status-negative")} ${esc(w.link_note || "Link failed")}</span>`;
@@ -189,7 +183,6 @@ function renderWorks() {
         <div class="bdg-row">
           ${linkBadge(w)}
           ${w.fallback ? `<span class="bdg bdg-warn">${icon("status-warning")} Fallback</span>` : ""}
-          ${yesNoBadge("Bedrock", w.bedrock_used)}${yesNoBadge("AgentCore", w.agentcore_used)}
           ${w.video_url ? `<span class="bdg">${icon("video-on")} Video</span>` : ""}${w.screenshot_url ? `<span class="bdg">${icon("file")} Screenshot</span>` : ""}
           ${sourceBadges(w)}
         </div>
@@ -276,8 +269,6 @@ function editWork(id) {
   document.getElementById("w-title").value = w.project_title;
   document.getElementById("w-category").value = w.category || "";
   document.getElementById("w-url").value = w.project_url || "";
-  document.getElementById("w-bedrock").value = yn(w.bedrock_used);
-  document.getElementById("w-agentcore").value = yn(w.agentcore_used);
   document.getElementById("w-video").value = w.video_url || "";
   document.getElementById("w-shot").value = w.screenshot_url || "";
   document.getElementById("w-repo").value = w.repo_url || "";
@@ -312,8 +303,6 @@ document.getElementById("work-form").addEventListener("submit", async (e) => {
     project_title: document.getElementById("w-title").value.trim(),
     category: document.getElementById("w-category").value.trim(),
     project_url: document.getElementById("w-url").value.trim(),
-    bedrock_used: document.getElementById("w-bedrock").value,
-    agentcore_used: document.getElementById("w-agentcore").value,
     video_url: document.getElementById("w-video").value.trim(),
     screenshot_url: document.getElementById("w-shot").value.trim(),
     repo_url: document.getElementById("w-repo").value.trim(),
@@ -437,8 +426,8 @@ async function runImport(dry) {
     out.innerHTML =
       `<div class="imp-summary"><b>${data.summary.add}</b> to add · <b>${data.summary.update}</b> to update · <b>${data.summary.skipped}</b> rows skipped</div>` +
       list(data.errors, "bad") + list(data.warnings, "warn") +
-      (data.plan.length ? `<div class="table-wrap"><table><thead><tr><th>Action</th><th>Team</th><th>Project</th><th>Link</th><th>Bedrock</th><th>AgentCore</th></tr></thead><tbody>` +
-        data.plan.map((p) => `<tr><td><span class="chip ${p.action === "add" ? "done" : "pending"}">${p.action}</span></td><td class="cell-title">T${p.team_number} · ${esc(p.team_name)}</td><td>${esc(p.project_title)}</td><td class="oi-link-cell">${esc(p.project_url)}${p.url_changed ? " <span class='bdg bdg-warn'>link changed</span>" : ""}</td><td>${p.bedrock_used === null ? "—" : p.bedrock_used ? "Yes" : "No"}</td><td>${p.agentcore_used === null ? "—" : p.agentcore_used ? "Yes" : "No"}</td></tr>`).join("") +
+      (data.plan.length ? `<div class="table-wrap"><table><thead><tr><th>Action</th><th>Team</th><th>Project</th><th>Link</th></tr></thead><tbody>` +
+        data.plan.map((p) => `<tr><td><span class="chip ${p.action === "add" ? "done" : "pending"}">${p.action}</span></td><td class="cell-title">T${p.team_number} · ${esc(p.team_name)}</td><td>${esc(p.project_title)}</td><td class="oi-link-cell">${esc(p.project_url)}${p.url_changed ? " <span class='bdg bdg-warn'>link changed</span>" : ""}</td></tr>`).join("") +
         `</tbody></table></div>` : "");
     if (data.applied) {
       toast(`Import done: ${data.summary.add} added, ${data.summary.update} updated.`);

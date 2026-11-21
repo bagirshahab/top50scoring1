@@ -9,7 +9,7 @@
 //  DELETE /api/works?id=<uuid>    -> delete a project (ADMIN); remaining ones are renumbered
 //
 //  Fields: team_name, project_title, category, project_url (required),
-//          team_number, bedrock_used, agentcore_used, repo_url, video_url,
+//          team_number, repo_url, video_url,
 //          screenshot_url, fallback (flag: link unavailable, show backup material).
 //  Judges never see the internal link-check note.
 // =====================================================================
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
       const rows = await sql`
         SELECT id, code, team_name, project_title, category, project_url, position, created_at,
-               team_number, bedrock_used, agentcore_used, repo_url, video_url, screenshot_url, fallback,
+               team_number, repo_url, video_url, screenshot_url, fallback,
                link_ok, link_status, link_note, link_checked_at,
                source_submitted_at, source_conflict, source_count
         FROM pjt_works
@@ -71,10 +71,10 @@ export default async function handler(req, res) {
         const rows = await sql`
           INSERT INTO pjt_works
             (code, team_name, project_title, category, project_url, position,
-             team_number, bedrock_used, agentcore_used, repo_url, video_url, screenshot_url, fallback)
+             team_number, repo_url, video_url, screenshot_url, fallback)
           VALUES (${code}, ${v.team_name}, ${v.project_title}, ${v.category}, ${v.project_url},
                   (SELECT COALESCE(MAX(position), 0) + 1 FROM pjt_works),
-                  ${v.team_number}, ${v.bedrock_used}, ${v.agentcore_used}, ${v.repo_url}, ${v.video_url}, ${v.screenshot_url}, ${v.fallback})
+                  ${v.team_number}, ${v.repo_url}, ${v.video_url}, ${v.screenshot_url}, ${v.fallback})
           RETURNING id, code, position
         `;
         return res.status(200).json({ success: true, work: rows[0] });
@@ -122,7 +122,7 @@ export default async function handler(req, res) {
             link_note       = CASE WHEN project_url IS DISTINCT FROM ${v.project_url} THEN NULL ELSE link_note END,
             link_checked_at = CASE WHEN project_url IS DISTINCT FROM ${v.project_url} THEN NULL ELSE link_checked_at END,
             project_url = ${v.project_url},
-            team_number = ${v.team_number}, bedrock_used = ${v.bedrock_used}, agentcore_used = ${v.agentcore_used},
+            team_number = ${v.team_number},
             repo_url = ${v.repo_url}, video_url = ${v.video_url}, screenshot_url = ${v.screenshot_url}, fallback = ${v.fallback}
           WHERE id = ${body.id}
           RETURNING id

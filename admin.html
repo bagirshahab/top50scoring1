@@ -97,14 +97,6 @@
               <input type="text" id="w-category" placeholder="e.g. Agriculture & Food" />
             </div>
             <div class="field-row">
-              <div class="field">
-                <label for="w-bedrock">Bedrock used</label>
-                <select id="w-bedrock"><option value="">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select>
-              </div>
-              <div class="field">
-                <label for="w-agentcore">AgentCore</label>
-                <select id="w-agentcore"><option value="">Unknown</option><option value="yes">Yes</option><option value="no">No</option></select>
-              </div>
             </div>
             <div class="field">
               <label for="w-url">Project link <span class="req">*</span></label>
@@ -171,7 +163,7 @@
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('imp-text').hidden = !document.getElementById('imp-text').hidden">or paste text</button>
         </div>
         <textarea id="imp-text" hidden placeholder="Paste CSV (with a header row) or JSON array here" style="min-height:120px;font-family:ui-monospace,monospace;font-size:12.5px;margin-top:10px"></textarea>
-        <p class="hint">Columns used: team_number, team_name, project_title, website_url, repo_url, video_url, bedrock_used, agentcore_used, and optionally submitted_at / category.</p>
+        <p class="hint">Columns used: team_name, project_title, website_url, repo_url, video_url, and optionally submitted_at / category.</p>
         <div class="form-actions" style="margin-top:12px">
           <button class="btn btn-primary" id="imp-preview" onclick="runImport(true)">Preview</button>
           <button class="btn btn-cyan" id="imp-apply" onclick="runImport(false)" disabled>Apply import</button>
