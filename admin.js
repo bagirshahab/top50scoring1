@@ -7,7 +7,6 @@ if (admin) document.getElementById("who-name").textContent = admin.name || "Admi
 let RANKING = [];
 let DETAILS = [];
 let WORKS = [];
-let MAX_WORKS = 20;
 let editingId = null;
 
 // ---------- Tabs ----------
@@ -107,7 +106,6 @@ async function loadWorks() {
   try {
     const data = await apiFetch("/api/works");
     WORKS = data.works || [];
-    MAX_WORKS = data.max || 20;
     renderWorks();
     showSyncNote(data.sync);
   } catch (err) {
@@ -163,9 +161,8 @@ function linkBadge(w) {
 
 function renderWorks() {
   const list = document.getElementById("works-list");
-  document.getElementById("works-count").textContent = `${WORKS.length} / ${MAX_WORKS}`;
+  document.getElementById("works-count").textContent = WORKS.length + (WORKS.length === 1 ? " project" : " projects");
   document.getElementById("stat-works").textContent = WORKS.length;
-  document.getElementById("work-submit").disabled = !editingId && WORKS.length >= MAX_WORKS;
   document.getElementById("check-all-btn").disabled = !WORKS.length;
 
   if (!WORKS.length) {

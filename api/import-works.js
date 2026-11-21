@@ -12,11 +12,10 @@
 //   - A project that already exists with the same team_number is UPDATED
 //     (keeps its code, presentation position, scores, fallback flag and screenshot).
 //     New team numbers are ADDED at the end of the order.
-//   - Never more than 20 projects in total.
 //   - dry_run=true only returns the plan, nothing is written.
 // =====================================================================
 import { sql, setCors, parseBody, requireRole, nextWorkCode } from "./_lib.js";
-import { MAX_WORKS, cleanUrl, cleanOptionalUrl, parseBool, parseTeamNumber } from "./_works-util.js";
+import { cleanUrl, cleanOptionalUrl, parseBool, parseTeamNumber } from "./_works-util.js";
 
 const ALIASES = {
   team_number: ["team_number", "team_no", "team_num", "team_id", "number", "no"],
@@ -111,10 +110,6 @@ export default async function handler(req, res) {
     const existingByTeam = new Map(existing.filter((e) => e.team_number != null).map((e) => [e.team_number, e]));
     const toAdd = incoming.filter((r) => !existingByTeam.has(r.team_number));
     const toUpdate = incoming.filter((r) => existingByTeam.has(r.team_number));
-
-    if (existing.length + toAdd.length > MAX_WORKS) {
-      errors.push(`Importing would give ${existing.length + toAdd.length} projects, but the maximum is ${MAX_WORKS}. Delete some projects or remove rows first.`);
-    }
 
     const plan = incoming.map((r) => ({
       action: existingByTeam.has(r.team_number) ? "update" : "add",

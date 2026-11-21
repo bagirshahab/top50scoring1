@@ -1,8 +1,8 @@
 # Demo Day Judging — AI For All Hackathon 2026 (Top 20 → Top 5)
 
 Perubahan terbaru (versi ini):
-- Proyek berupa **link web** (bukan file HTML), maksimal 20.
-- Admin mengatur **urutan presentasi 1–20** (tombol ▲ ▼ atau pilih nomor) di tab *Projects & Order*.
+- Proyek berupa **link web** (bukan file HTML), tanpa batas jumlah.
+- Admin mengatur **urutan presentasi** (tombol ▲ ▼ atau pilih nomor) di tab *Projects & Order*.
 - Kriteria Demo Day: Working prototype 30%, Problem & Impact 20%, Solution Fit & Insight 20%, Feasibility & Risk 15%, Pitch & Team 15%. Didefinisikan di `criteria.js` dan `api/scores.js`.
 - Tampilan juri dan admin dioptimalkan untuk tablet (tombol besar, panel skor + preview link berdampingan di layar lebar).
 - Database: jalankan `schema.sql` untuk instalasi baru. Tabel memakai prefix `pjt_`.
@@ -257,6 +257,6 @@ Setiap tim yang mengirim form Top 20 otomatis muncul di daftar project penjurian
 
 - **Sumber:** view `submissions_top20_current` di database yang sama (satu baris per alamat email, submission terbaru yang dipakai; nomor tim dibaca dari tabel `submissions_top20`). Aplikasi hanya membaca, tidak pernah menulis ke tabel form.
 - **Kapan jalan:** setiap daftar project atau ranking dimuat (dibatasi sekali per 15 detik), dan lewat tombol **Sync from form** di tab Projects & Order.
-- **Tim dikenali dari emailnya** (hanya hash yang disimpan). **Tim baru** ditambahkan di urutan terakhir (maks 20). **Tim yang kirim ulang** diperbarui hanya jika submission-nya lebih baru dari yang terakhir diterapkan, jadi perbaikan manual admin (link, fallback, screenshot, urutan) tidak tertimpa sampai tim itu mengirim ulang.
+- **Tim dikenali dari emailnya** (hanya hash yang disimpan). **Tim baru** ditambahkan di urutan terakhir (tanpa batas jumlah). **Tim yang kirim ulang** diperbarui hanya jika submission-nya lebih baru dari yang terakhir diterapkan, jadi perbaikan manual admin (link, fallback, screenshot, urutan) tidak tertimpa sampai tim itu mengirim ulang.
 - **Project yang dihapus admin** tidak muncul lagi sampai tim itu mengirim form lagi (tabel kecil `pjt_sync_ignore`).
 - Jika dua email memakai nomor tim yang sama, keduanya tetap masuk; yang belakangan dimasukkan tanpa nomor dan diberi tanda "Team number clash" supaya admin memeriksa.

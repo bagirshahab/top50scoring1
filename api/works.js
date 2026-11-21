@@ -1,5 +1,5 @@
 // =====================================================================
-//  /api/works  — Project management (web links, max 20)
+//  /api/works  — Project management (web links, no fixed limit)
 //
 //  GET    /api/works              -> project list in presentation order (admin & judge)
 //  POST   /api/works              -> add a project (ADMIN)
@@ -14,7 +14,7 @@
 //  Judges never see the internal link-check note.
 // =====================================================================
 import { sql, setCors, parseBody, verifyToken, requireRole, nextWorkCode, requireJudgingOpen } from "./_lib.js";
-import { MAX_WORKS, readWorkFields } from "./_works-util.js";
+import { readWorkFields } from "./_works-util.js";
 import { syncSubmissions } from "./_sync.js";
 
 function dupMessage(err) {
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
           delete r.source_submitted_at; delete r.source_conflict; delete r.source_count;
         }
       }
-      return res.status(200).json({ works: rows, max: MAX_WORKS, sync: user.role === "admin" && sync && !sync.throttled ? { added: sync.added, updated: sync.updated, skipped: sync.skipped, warnings: sync.warnings, at: sync.at } : undefined });
+      return res.status(200).json({ works: rows, sync: user.role === "admin" && sync && !sync.throttled ? { added: sync.added, updated: sync.updated, skipped: sync.skipped, warnings: sync.warnings, at: sync.at } : undefined });
     }
 
     // -------- POST: add --------
@@ -60,11 +60,6 @@ export default async function handler(req, res) {
       const parsed = readWorkFields(parseBody(req));
       if (parsed.error) return res.status(400).json({ error: parsed.error });
       const v = parsed.value;
-
-      const count = (await sql`SELECT COUNT(*)::int AS c FROM pjt_works`)[0].c;
-      if (count >= MAX_WORKS) {
-        return res.status(400).json({ error: `Maximum ${MAX_WORKS} projects reached. Delete one first.` });
-      }
 
       const code = await nextWorkCode();
       try {

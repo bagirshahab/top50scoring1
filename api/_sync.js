@@ -10,7 +10,7 @@
 //  The form has no team number any more, so none is read or shown.
 //
 //  Rules
-//   - New email                  -> project added at the end of the order (max 20 in total).
+//   - New email                  -> project added at the end of the order (no limit on how many).
 //   - Known email                -> updated ONLY when the form row is newer than the one applied
 //                                   last time, so an admin's manual fix (link, fallback,
 //                                   screenshot, order) survives until the team resubmits.
@@ -22,7 +22,7 @@
 // =====================================================================
 import { createHash } from "node:crypto";
 import { sql, nextWorkCode } from "./_lib.js";
-import { MAX_WORKS, cleanUrl, cleanOptionalUrl } from "./_works-util.js";
+import { cleanUrl, cleanOptionalUrl } from "./_works-util.js";
 
 const THROTTLE_MS = 15000;
 let lastRun = 0;
@@ -41,7 +41,6 @@ export async function syncSubmissions({ force = false, dryRun = false } = {}) {
     const existing = await sql`SELECT id, source_key, source_submitted_at FROM pjt_works`;
     const byKey = new Map(existing.filter((e) => e.source_key).map((e) => [e.source_key, e]));
     const ignored = new Map((await sql`SELECT source_key, submitted_at FROM pjt_sync_ignore`).map((r) => [r.source_key, r.submitted_at]));
-    let total = existing.length;
 
     for (const r of rows) {
       const key = sourceKey(r.email);
@@ -79,7 +78,6 @@ export async function syncSubmissions({ force = false, dryRun = false } = {}) {
         continue;
       }
 
-      if (total >= MAX_WORKS) { result.skipped.push(`${label}: not added, the list already has ${MAX_WORKS} projects.`); continue; }
       result.plan.push({ action: "add", team_name: team, project_title: title });
       if (!dryRun) {
         try {
@@ -97,7 +95,7 @@ export async function syncSubmissions({ force = false, dryRun = false } = {}) {
           throw err;
         }
       }
-      total++; result.added++;
+      result.added++;
     }
   } catch (err) {
     console.error("sync-submissions error:", err);

@@ -3,8 +3,6 @@
 //  Files starting with "_" are not exposed as API routes by Vercel.
 // =====================================================================
 
-export const MAX_WORKS = 20;
-
 // Public hostnames only: no IP literals, localhost, or internal suffixes.
 export function isPublicHost(host) {
   const h = String(host || "").toLowerCase();

@@ -11,7 +11,7 @@ Existing: static HTML, CSS and vanilla JavaScript on Vercel, serverless API rout
 
 ## Users
 - **Judges** (7 accounts: 2 CPG-True, 2 AWS, 1 educator, others by the organizers). They sit at the Demo Day venue (22 Nov) with a tablet, mostly landscape, while a team pitches for 6 minutes and answers questions for 4. They score each team on five weighted criteria and may reopen a score to change it. Their attention belongs to the stage; the interface must be fast to read and hard to mis-tap. (Inferred from the brief and the judging rubric image; confirm.)
-- **Admin / organizers.** Add the 20 project links, set the presentation order, check that every link works, mark fallbacks, create judge accounts, import submission-form exports, and watch the ranking live.
+- **Admin / organizers.** Add the project links, set the presentation order, check that every link works, mark fallbacks, create judge accounts, import submission-form exports, and watch the ranking live.
 - **Public viewers** of the leaderboard (read only, no sign-in).
 
 ## Product Purpose
@@ -22,12 +22,12 @@ Purpose-built for this hackathon's rubric: the weights are fixed (Working protot
 
 ## Operating Context
 - Tablet at a venue, possibly shared between judges, on venue Wi-Fi that may be slow or drop.
-- Teams present in a fixed order set by the admin (1 to 20). Judges move between projects quickly.
+- Teams present in a fixed order set by the admin (any number of teams). Judges move between projects quickly.
 - Scores can be edited while judging is open. A saved score opens read-only until the judge chooses to edit.
 - Submission form data (team number, Bedrock used, AgentCore, website, repo, video links) is imported as CSV or JSON; the latest submission per team number wins.
 
 ## Capabilities and Constraints
-- Max 20 projects. Team number 1 to 99, unique.
+- No fixed limit on the number of projects.
 - Scores are integers 1 to 100 per criterion; weighted average ranks teams.
 - Judges' sign-in is limited to the judging window (server and client).
 - Light and dark themes (follows the device, user can switch). English UI.
