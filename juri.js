@@ -573,6 +573,21 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && currentW
 buildParams();
 loadWorks();
 
+// Close the login card on its own after 10 seconds (a click inside the preview iframe never reaches this page,
+// so an outside click is not enough). The timer pauses while the pointer is over the card.
+(() => {
+  const box = document.getElementById("team-notes");
+  if (!box) return;
+  let timer = null;
+  const stop = () => { clearTimeout(timer); timer = null; };
+  const start = () => { stop(); timer = setTimeout(() => { box.open = false; }, 10000); };
+  box.addEventListener("toggle", () => { if (box.open) start(); else stop(); });
+  const body = document.getElementById("team-notes-body");
+  body.addEventListener("pointerenter", stop);
+  body.addEventListener("pointerleave", () => { if (box.open) start(); });
+  window.addEventListener("blur", () => { if (box.open) box.open = false; }); // focus moved into the preview
+})();
+
 // Close the login card when clicking elsewhere or pressing Escape.
 document.addEventListener("click", (e) => { const b = document.getElementById("team-notes"); if (b && b.open && !b.contains(e.target)) b.open = false; });
 document.addEventListener("keydown", (e) => { const b = document.getElementById("team-notes"); if (e.key === "Escape" && b && b.open) b.open = false; });
