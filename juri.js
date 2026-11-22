@@ -585,7 +585,6 @@ loadWorks();
   const body = document.getElementById("team-notes-body");
   body.addEventListener("pointerenter", stop);
   body.addEventListener("pointerleave", () => { if (box.open) start(); });
-  window.addEventListener("blur", () => { if (box.open) box.open = false; }); // focus moved into the preview
 })();
 
 // Close the login card when clicking elsewhere or pressing Escape.
