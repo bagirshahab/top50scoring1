@@ -773,7 +773,7 @@ tr.avg-row td { background: var(--inset); font-weight: 700; border-top: 1px soli
   .sort-select { width: 100%; }
   .sort-select select { flex: 1; min-width: 0; }
 }
-/* Team notes shown above the project preview */
+/* Login details shown above the project preview */
 .team-notes { margin: 0 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
 .team-notes > summary { cursor: pointer; padding: 9px 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .team-notes .tn-hint { font-weight: 400; opacity: .7; font-size: .85em; }
