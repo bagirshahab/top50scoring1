@@ -773,9 +773,11 @@ tr.avg-row td { background: var(--inset); font-weight: 700; border-top: 1px soli
   .sort-select { width: 100%; }
   .sort-select select { flex: 1; min-width: 0; }
 }
-/* Login details shown above the project preview */
-.team-notes { margin: 0 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-.team-notes > summary { cursor: pointer; padding: 9px 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-.team-notes .tn-hint { font-weight: 400; opacity: .7; font-size: .85em; }
-.team-notes .tn-body { padding: 0 12px 12px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 30vh; overflow: auto; line-height: 1.5; user-select: text; }
+/* Login details: a small button in the project bar; the card floats over the preview and takes no space */
+.proj-bar { position: relative; }
+.team-notes { flex: 0 0 auto; }
+.team-notes > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.team-notes > summary::-webkit-details-marker { display: none; }
+.team-notes[open] > summary { border-color: var(--line-strong); }
+.team-notes .tn-body { position: absolute; z-index: 20; top: calc(100% + 6px); right: 16px; width: min(380px, calc(100% - 32px)); max-height: 50vh; overflow: auto; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); box-shadow: 0 10px 30px rgba(0,0,0,.35); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; font-size: 13.5px; user-select: text; }
 .team-notes .tn-body a { text-decoration: underline; }

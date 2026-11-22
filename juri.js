@@ -572,3 +572,7 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && currentW
 
 buildParams();
 loadWorks();
+
+// Close the login card when clicking elsewhere or pressing Escape.
+document.addEventListener("click", (e) => { const b = document.getElementById("team-notes"); if (b && b.open && !b.contains(e.target)) b.open = false; });
+document.addEventListener("keydown", (e) => { const b = document.getElementById("team-notes"); if (e.key === "Escape" && b && b.open) b.open = false; });
