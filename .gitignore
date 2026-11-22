@@ -7,3 +7,5 @@ node_modules/
 *.log
 judge-credentials.local.txt
 judge-credentials*.txt
+
+*.xlsx
